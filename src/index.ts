@@ -28,7 +28,7 @@ function createSpreadsheet(columns: number, rows: number, freeze_column: number)
     const frozen_column_left = get_frozen_column_left(i, cell_width);
     const th = $("<th>", {
       text: String.fromCharCode(65 + i),
-      "data-row": i,
+      "data-column": i,
       style:
         i < freeze_column ? `left: ${frozen_column_left}px; z-index: 999;` : "",
     });
@@ -49,6 +49,8 @@ function createSpreadsheet(columns: number, rows: number, freeze_column: number)
       const td = $("<td>", {
         text: `R-${i} C-${j}`,
         "data-row": i,
+        "tabindex": "-1",
+        "role": "gridcell",
         "data-column": j,
         class: j < freeze_column ? "freeze-columns" : "",
         style: `left: ${frozen_column_left}px;`,
@@ -63,7 +65,11 @@ function createSpreadsheet(columns: number, rows: number, freeze_column: number)
   table.append(thead);
   table.append(tbody);
 
-  $(".luna-spreadsheet").append(table);
+  $('.luna-spreadsheet').append(table);
+
+  // Set the initial keyboard focus cell
+  $('.luna-spreadsheet table tbody td[data-row="0"][data-column="0"]').attr('tabindex', '0');
+  
 }
 
 createSpreadsheet(columns, rows, freeze_column);
