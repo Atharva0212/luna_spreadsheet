@@ -41,10 +41,8 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
         }
 
         set_active_cell_selection({
-            start_row: 0,
-            start_column: column,
-            end_row: column_cells.length,
-            end_column: column
+            row: 0,
+            column: column,
         });
         spreadsheet_selection.is_selecting = true;
     }
@@ -52,10 +50,8 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
         const coordinates = get_cell_coordinates(cell);
 
         set_active_cell_selection({
-            start_row: coordinates.row,
-            start_column: coordinates.column,
-            end_row: coordinates.row,
-            end_column: coordinates.column
+            row: coordinates.row,
+            column: coordinates.column,
         });
         spreadsheet_selection.is_selecting = true;
     }
@@ -87,7 +83,56 @@ export function mouseup_handler() {
 export function keydown_handler(event: JQuery.KeyDownEvent) {  
     if (event.key === SPREADSHEET_KEY.ENTER) {
         event.preventDefault();
+
+        let row = 0;
+        let column = 0;
+
+        if (spreadsheet_selection.active_cell) {
+            const active_cell_row = spreadsheet_selection.active_cell.row;
+            const active_cell_column = spreadsheet_selection.active_cell.column;
+            const td = get_cell_from_coordinates(active_cell_row, active_cell_column);
+
+            if (td && td.length > 0) {
+                const tr = td.closest('tr');
+
+                if (event.shiftKey) {
+                    if (td.is(":first-of-type")) {
+                        const row_count = td.closest("tbody").find('tr').length;
+                        const column_count = td.closest('tr').find('td').length;
+                        
+                        row = row_count - 1;
+                        column = (active_cell_column - 1 + column_count) % column_count;
+                    }
+                    else {
+                        row = active_cell_row - 1;
+                        column = active_cell_column;
+                    }
+                }
+                else {
+                    if (tr.is(":last-of-type")) {
+                        const row_count = td.closest('tbody').find('tr').length;
+                        const column_count = td.closest('tr').find('td').length;
+                        row = (active_cell_row + 1) % row_count;
+                        column = (active_cell_column + 1) % column_count;
+                    }
+                    else {
+                        row = active_cell_row + 1;
+                        column = active_cell_column;
+                    }
+                }
+            }
+        }
         
+        set_active_cell_selection({
+            row: row,
+            column: column,
+        });  
+        
+        const active_cell = get_cell_from_coordinates(row, column);
+
+        if (active_cell && active_cell.length > 0) {
+            active_cell[0].focus();
+        }
     }
     else if (event.key === SPREADSHEET_KEY.TAB) {
         event.preventDefault();
@@ -128,10 +173,8 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
         }
         
         set_active_cell_selection({
-            start_row: row,
-            start_column: column,
-            end_row: row,
-            end_column: column,
+            row: row,
+            column: column,
         });  
         
         const active_cell = get_cell_from_coordinates(row, column);
@@ -151,17 +194,15 @@ function normalize_range(start_row: CellRange['start_row'], start_column: CellRa
     };
 }
 
-function set_active_cell_selection(cell_range: CellRange) {
+function set_active_cell_selection(active_cell_coordinates: ActiveCell) {
     $(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
 
-    const active_cell = get_cell_from_coordinates(cell_range.start_row, cell_range.start_column) as JQuery<HTMLTableCellElement>;
+    const active_cell = get_cell_from_coordinates(active_cell_coordinates.row, active_cell_coordinates.column) as JQuery<HTMLTableCellElement>;
     active_cell.addClass('active-cell');
     
-    spreadsheet_selection.active_cell = {
-        row: cell_range.start_row,
-        column: cell_range.start_column
-    };
-    set_selection(cell_range);
+    spreadsheet_selection.active_cell = active_cell_coordinates;
+    spreadsheet_selection.selected_cell_range = null;
+    $(".luna-spreadsheet table tbody td.selected-cell").removeClass("selected-cell");
 }
 
 function set_selection(cell_range: CellRange) {
