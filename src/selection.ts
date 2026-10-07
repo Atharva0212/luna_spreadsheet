@@ -25,6 +25,10 @@ const spreadsheet_selection: SpreadsheetSelection = {
     is_selecting: false,
 };
 
+export function get_spreadsheet_selection() {
+    return spreadsheet_selection;
+}
+
 export function mousedown_handler(event: JQuery.MouseDownEvent) {
     const cell = $(event.target).closest<HTMLTableCellElement>("th, td");
 
@@ -57,7 +61,7 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
     }
 }
 
-export function mouseenter_handler(event: JQuery.MouseEnterEvent) {
+export function mouseeover_handler(event: JQuery.MouseOverEvent) {
     if (!spreadsheet_selection.active_cell || !spreadsheet_selection.is_selecting) {
         return;
     }
@@ -201,8 +205,13 @@ function set_active_cell_selection(active_cell_coordinates: ActiveCell) {
     active_cell.addClass('active-cell');
     
     spreadsheet_selection.active_cell = active_cell_coordinates;
-    spreadsheet_selection.selected_cell_range = null;
-    $(".luna-spreadsheet table tbody td.selected-cell").removeClass("selected-cell");
+
+    set_selection({
+        start_row: active_cell_coordinates.row,
+        start_column: active_cell_coordinates.column,
+        end_row: active_cell_coordinates.row,
+        end_column: active_cell_coordinates.column,
+    })
 }
 
 function set_selection(cell_range: CellRange) {
@@ -238,7 +247,7 @@ function get_cell_coordinates(td: JQuery<HTMLTableCellElement>) {
     };
 }
 
-function get_cell_from_coordinates(row: number, column: number): JQuery<HTMLTableCellElement> | null {
+export function get_cell_from_coordinates(row: number, column: number): JQuery<HTMLTableCellElement> | null {
     return $('.luna-spreadsheet tbody td[data-row="' + row + '"][data-column="' + column + '"]');
 }
 
