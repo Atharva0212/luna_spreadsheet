@@ -1,7 +1,8 @@
 import { $ } from "jquery";
 import { SPREADSHEET_KEY } from "./keyboard_constants";
+import { open_editor } from "./editor";
 
-type ActiveCell = {
+export type Cell = {
     row: number;
     column: number;
 };
@@ -14,7 +15,7 @@ type CellRange = {
 };
 
 type SpreadsheetSelection = {
-    active_cell: ActiveCell | null;
+    active_cell: Cell | null;
     selected_cell_range: CellRange | null;
     is_selecting: boolean;
 };
@@ -30,32 +31,46 @@ export function get_spreadsheet_selection() {
 }
 
 export function mousedown_handler(event: JQuery.MouseDownEvent) {
+    event.preventDefault();
     const cell = $(event.target).closest<HTMLTableCellElement>("th, td");
 
     if (cell.length === 0) {
         return;
     }
 
+    // if (document.activeElement) {
+    //     const active_element = $(document.activeElement);
+
+    //     if (active_element.is('td') && active_element.attr('role') === 'gridcell') {
+    //         (document.activeElement as HTMLElement).blur();
+    //     }
+    // }    
+
     if (cell.closest("thead").length > 0) {
         const column = Number(cell.attr('data-column'));
-        const column_cells = $('.luna-spreadsheet table tbody td[data-column="' + column + '"]');
+        const column_body_cells = $('.luna-spreadsheet table tbody td[data-column="' + column + '"]');
 
-        if (column_cells.length === 0) {
+        if (column_body_cells.length === 0) {
             return;
         }
 
-        set_active_cell_selection({
-            row: 0,
-            column: column,
+        set_active_cell_and_range_selection({
+            start_row: 0,
+            start_column: column,
+            end_row: column_body_cells.length,
+            end_column: column
         });
+
         spreadsheet_selection.is_selecting = true;
     }
     else if (cell.closest("tbody").length > 0) {
         const coordinates = get_cell_coordinates(cell);
 
-        set_active_cell_selection({
-            row: coordinates.row,
-            column: coordinates.column,
+        set_active_cell_and_range_selection({
+            start_row: coordinates.row,
+            start_column: coordinates.column,
+            end_row: coordinates.row,
+            end_column: coordinates.column
         });
         spreadsheet_selection.is_selecting = true;
     }
@@ -79,13 +94,13 @@ export function mouseeover_handler(event: JQuery.MouseOverEvent) {
 }
 
 export function mouseup_handler() {
-    console.log("hi", Math.random());
-    
     spreadsheet_selection.is_selecting = false;
 }
 
 export function keydown_handler(event: JQuery.KeyDownEvent) {  
-    if (event.key === SPREADSHEET_KEY.ENTER) {
+    const event_key = event.key;
+
+    if (event_key === SPREADSHEET_KEY.ENTER) {
         event.preventDefault();
 
         let row = 0;
@@ -127,18 +142,14 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
             }
         }
         
-        set_active_cell_selection({
-            row: row,
-            column: column,
+        set_active_cell_and_range_selection({
+            start_row: row,
+            start_column: column,
+            end_row: row,
+            end_column: column
         });  
-        
-        const active_cell = get_cell_from_coordinates(row, column);
-
-        if (active_cell && active_cell.length > 0) {
-            active_cell[0].focus();
-        }
     }
-    else if (event.key === SPREADSHEET_KEY.TAB) {
+    else if (event_key === SPREADSHEET_KEY.TAB) {
         event.preventDefault();
 
         let row = 0;
@@ -176,15 +187,37 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
             }
         }
         
-        set_active_cell_selection({
-            row: row,
-            column: column,
+        set_active_cell_and_range_selection({
+            start_row: row,
+            start_column: column,
+            end_row: row,
+            end_column: column
         });  
-        
-        const active_cell = get_cell_from_coordinates(row, column);
+    }
+    else if (event_key === SPREADSHEET_KEY.BACKSPACE || event_key === SPREADSHEET_KEY.DELETE) {
+        event.preventDefault();
+        const spreadsheet_selection = get_spreadsheet_selection();
+        const selected_cell_range = spreadsheet_selection.selected_cell_range;
 
-        if (active_cell && active_cell.length > 0) {
-            active_cell[0].focus();
+        if (!selected_cell_range) {
+            return;
+        }
+
+        for (let i = selected_cell_range.start_row; i <= selected_cell_range.end_row; i++) {
+            for (let j = selected_cell_range.start_column; j <= selected_cell_range.end_column; j++) {
+                const td = get_cell_from_coordinates(i, j);
+
+                if (td && td.length > 0) {
+                    td.html('');
+                }
+            }
+        }
+    }
+    else if (event_key === SPREADSHEET_KEY.F2) {
+        event.preventDefault();
+        
+        if (spreadsheet_selection.active_cell) {
+            open_editor(spreadsheet_selection.active_cell);
         }
     }
 }
@@ -198,19 +231,23 @@ function normalize_range(start_row: CellRange['start_row'], start_column: CellRa
     };
 }
 
-function set_active_cell_selection(active_cell_coordinates: ActiveCell) {
+export function set_active_cell_and_range_selection(cell_range: CellRange) {
     $(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
 
-    const active_cell = get_cell_from_coordinates(active_cell_coordinates.row, active_cell_coordinates.column) as JQuery<HTMLTableCellElement>;
+    const active_cell = get_cell_from_coordinates(cell_range.start_row, cell_range.start_column) as JQuery<HTMLTableCellElement>;
+    active_cell[0].focus();
     active_cell.addClass('active-cell');
     
-    spreadsheet_selection.active_cell = active_cell_coordinates;
+    spreadsheet_selection.active_cell = {
+        row: cell_range.start_row,
+        column: cell_range.start_column,
+    };
 
     set_selection({
-        start_row: active_cell_coordinates.row,
-        start_column: active_cell_coordinates.column,
-        end_row: active_cell_coordinates.row,
-        end_column: active_cell_coordinates.column,
+        start_row: cell_range.start_row,
+        start_column: cell_range.start_column,
+        end_row: cell_range.end_row,
+        end_column: cell_range.end_column,
     })
 }
 

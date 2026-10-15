@@ -1,3 +1,8 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
 .luna-spreadsheet table {
   --spreadsheet-border-line-width: 0.5px;
   --spreadsheet-border-color: #ccc;
@@ -7,6 +12,7 @@
   border-collapse: separate;
   border-spacing: 0;
   user-select: none;
+  -webkit-user-select: none;
   outline: none;
 }
 
@@ -19,19 +25,19 @@
     var(--spreadsheet-border-color);
   font-size: 13px;
   line-height: 1.1;
-  padding: 0px 10px 0px 10px;
   text-wrap: nowrap;
   background-color: white;
+  /* table-layout: fixed; */
 }
 
 .luna-spreadsheet table {
   font-size: 13px;
 }
 
-.luna-spreadsheet tr > :first-child {
+/* .luna-spreadsheet tr > :first-child {
   border-left: var(--spreadsheet-border-line-width) solid
     var(--spreadsheet-border-color);
-}
+} */
 
 .luna-spreadsheet thead tr:first-child > * {
   border-top: var(--spreadsheet-border-line-width) solid
@@ -50,7 +56,7 @@
   position: sticky;
   top: 0;
   z-index: 99;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 
 .luna-spreadsheet tbody tr td.freeze-columns {
@@ -75,4 +81,15 @@
 .luna-spreadsheet table tbody td.active-cell {
   background-color: var(--spreadsheet-selection-color);
   outline: 1.5px solid #2563eb;;
+}
+
+
+.luna-spreadsheet table tbody td .editor {
+  width: 100%;
+  max-height: 100%;
+  line-height: 1;
+  box-sizing: border-box;
+  border: 0;
+  /* padding: 0;
+  margin: 0; */
 }

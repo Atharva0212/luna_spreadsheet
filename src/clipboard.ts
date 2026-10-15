@@ -1,4 +1,4 @@
-import { get_cell_from_coordinates, get_spreadsheet_selection } from "./selection";
+import { get_cell_from_coordinates, get_spreadsheet_selection, set_active_cell_and_range_selection } from "./selection";
 
 let copied_data = '';
 
@@ -64,33 +64,47 @@ export function paste_handler(event: JQuery.Event) {
     }
 
     const copied_data = parse_copied_data();
-    console.log(copied_data);
 
     if (!copied_data) {
         return;
     }
-
-
-
+    
     const start_row = spreadsheet_selection.selected_cell_range.start_row;
     const start_column = spreadsheet_selection.selected_cell_range.start_column;
     const end_row = spreadsheet_selection.selected_cell_range.end_row;
-    // const end_column = spreadsheet_selection.selected_cell_range.end_column;
+    const end_column = spreadsheet_selection.selected_cell_range.end_column;
+
     const copied_rows = copied_data.length;
+    const copied_columns = copied_data[0].length;
 
-    for (let i = start_row; i <= end_row; i++) {
-        const normalised_row = i - start_row;
-        const selected_row = normalised_row % copied_rows;
+    const selected_rows = end_row - start_row + 1;
+    const selected_columns = end_column - start_column + 1;
 
-        // if ()
+    const max_rows = Math.max(selected_rows, copied_rows);
+    const max_columns = Math.max(selected_columns, copied_columns);
 
-        for (let j = 0; j < copied_data[selected_row].length; j++) {
+    for (let i = 0; i < max_rows; i++) {
+        const source_row = i % copied_rows;
+        const row = copied_data[source_row];
+
+        for (let j = 0; j < max_columns; j++) {
+            const source_column = j % row.length;
+
+            const destination_row = start_row + i;
             const destination_column = start_column + j;
-            const td = get_cell_from_coordinates(i, destination_column);
+
+            const td = get_cell_from_coordinates(destination_row, destination_column);
 
             if (td && td.length > 0) {
-                td.html(copied_data[selected_row][j]);
+                td.html(row[source_column]);
             }
         }
     }
+
+    set_active_cell_and_range_selection({
+        start_row: start_row,
+        start_column: start_column,
+        end_row: max_rows + start_row - 1,
+        end_column: max_columns + start_column - 1
+    });
 }

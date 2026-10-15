@@ -1,74 +1,80 @@
 
 import { $ } from 'jquery';
 import { register_events } from './events';
+import { columns, row_data } from './data';
 
-const columns = 20;
-const rows = 40;
+// const columns = 20;
+// const rows = 40;
 const freeze_column = 3;
 
 function get_frozen_column_left(index: number, cell_width: number) {
-  const border_width = 0.5;
+	const border_width = 0.5;
 
-  if (index === 0) {
-    return 0;
-  }
+	if (index === 0) {
+		return 0;
+	}
 
-  return cell_width + border_width + (index - 1) * cell_width;
+	return cell_width + border_width + (index - 1) * cell_width;
 }
 
-function createSpreadsheet(columns: number, rows: number, freeze_column: number) {
-  const table = $('<table>', {
-    'tabindex': 0
-  });
+function createSpreadsheet(freeze_column: number) {
+	const table = $('<table>', {
+		'tabindex': 0
+	});
 
-  // THEAD
-  const thead = $('<thead>');
-  const headerRow = $('<tr>');
-  const cell_width = 69.25;
+	// THEAD
+	const thead = $('<thead>');
+	const colgroup = $('<colgroup>');
+	const header_row = $('<tr>');
 
-  for (let i = 0; i < columns; i++) {
-    const frozen_column_left = get_frozen_column_left(i, cell_width);
-    const th = $('<th>', {
-      text: String.fromCharCode(65 + i),
-      'data-column': i,
-      style:
-        i < freeze_column ? `left: ${frozen_column_left}px; z-index: 999;` : '',
-    });
-    headerRow.append(th);
-  }
+	for (let i = 0; i < columns.length; i++) {
+		const column = columns[i];
 
-  thead.append(headerRow);
+		const th = $('<th>', {
+			text: column.title,
+			'data-column': i
+		});
+		header_row.append(th);
+		
+		const col = $('<col>', {
+        	style: 'min-width: ' + column.width + 'px;'
+    	});
 
-  // TBODY
-  const tbody = $('<tbody>');
+    	colgroup.append(col);
+	}
 
-  for (let i = 0; i < rows; i++) {
-    const bodyRow = $('<tr>');
+	thead.append(header_row);
 
-    for (let j = 0; j < columns; j++) {
-      const frozen_column_left = get_frozen_column_left(j, cell_width);
+	// TBODY
+	const tbody = $('<tbody>');
 
-      const td = $('<td>', {
-        text: `R-${i} C-${j}`,
-        'data-row': i,
-        'tabindex': '-1',
-        'role': 'gridcell',
-        'data-column': j,
-        class: j < freeze_column ? 'freeze-columns' : '',
-        style: `left: ${frozen_column_left}px;`,
-      });
+	for (let i = 0; i < row_data.length; i++) {
+		const bodyRow = $('<tr>');
 
-      bodyRow.append(td);
-    }
+		for (let j = 0; j < columns.length; j++) {
+			const frozen_column_left = get_frozen_column_left(j, 69.25);
 
-    tbody.append(bodyRow);
-  }
+			const td = $('<td>', {
+				text: row_data[i][j],
+				'tabindex': '-1',
+				'role': 'gridcell',
+				'data-row': i,
+				'data-column': j,
+				class: j < freeze_column ? 'freeze-columns' : ''
+			});
 
-  table.append(thead);
-  table.append(tbody);
+			bodyRow.append(td);
+		}
 
-  $('.luna-spreadsheet').append(table);
+		tbody.append(bodyRow);
+	}
+
+	table.append(thead);
+	table.append(colgroup);
+	table.append(tbody);
+
+	$('.luna-spreadsheet').append(table);
 }
 
-createSpreadsheet(columns, rows, freeze_column);
+createSpreadsheet(freeze_column);
 register_events()
