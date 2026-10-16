@@ -1,6 +1,6 @@
 import { $ } from "jquery";
 import { SPREADSHEET_KEY } from "./keyboard_constants";
-import { open_editor } from "./editor";
+import { close_editor, open_editor, spreadsheet_editor } from "./editor";
 
 export type Cell = {
     row: number;
@@ -215,10 +215,22 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
     }
     else if (event_key === SPREADSHEET_KEY.F2) {
         event.preventDefault();
-        
-        if (spreadsheet_selection.active_cell) {
-            open_editor(spreadsheet_selection.active_cell);
+
+        if (spreadsheet_selection.active_cell === null) {
+            return;
         }
+
+        const empty = true;
+        open_editor(spreadsheet_selection.active_cell, empty);
+        
+    }
+    else {
+        if (!spreadsheet_selection.active_cell || spreadsheet_editor) {
+            return;
+        }
+
+        const empty = false;
+        open_editor(spreadsheet_selection.active_cell, empty)
     }
 }
 
@@ -233,6 +245,7 @@ function normalize_range(start_row: CellRange['start_row'], start_column: CellRa
 
 export function set_active_cell_and_range_selection(cell_range: CellRange) {
     $(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
+    close_editor(false);
 
     const active_cell = get_cell_from_coordinates(cell_range.start_row, cell_range.start_column) as JQuery<HTMLTableCellElement>;
     active_cell[0].focus();
