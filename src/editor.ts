@@ -85,7 +85,6 @@ export function open_editor(cell_coordinates: Cell, empty: boolean) {
     if (!editor) {
         return;
     }
-    console.log("hi");
 
     const original_value = editor.open_editor(td, empty);
 
