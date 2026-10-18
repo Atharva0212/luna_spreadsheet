@@ -31,22 +31,14 @@ export function get_spreadsheet_selection() {
 }
 
 export function mousedown_handler(event: JQuery.MouseDownEvent) {
-    event.preventDefault();
     const cell = $(event.target).closest<HTMLTableCellElement>("th, td");
-
+    
     if (cell.length === 0) {
         return;
-    }
-
-    // if (document.activeElement) {
-    //     const active_element = $(document.activeElement);
-
-    //     if (active_element.is('td') && active_element.attr('role') === 'gridcell') {
-    //         (document.activeElement as HTMLElement).blur();
-    //     }
-    // }    
-
+    } 
+    
     if (cell.closest("thead").length > 0) {
+        event.preventDefault();
         const column = Number(cell.attr('data-column'));
         const column_body_cells = $('.luna-spreadsheet table tbody td[data-column="' + column + '"]');
 
@@ -65,6 +57,12 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
     }
     else if (cell.closest("tbody").length > 0) {
         const coordinates = get_cell_coordinates(cell);
+
+        if (spreadsheet_editor && spreadsheet_editor.cell.row === coordinates.row && spreadsheet_editor.cell.column === coordinates.column) {
+            return;
+        }
+
+        event.preventDefault();
 
         set_active_cell_and_range_selection({
             start_row: coordinates.row,
@@ -91,6 +89,15 @@ export function mouseeover_handler(event: JQuery.MouseOverEvent) {
     const selected_cell_range = normalize_range(spreadsheet_selection.active_cell.row, spreadsheet_selection.active_cell.column, coordinates.row, coordinates.column);
 
     set_selection(selected_cell_range);
+}
+
+export function dblclick_handler(event: JQuery.DoubleClickEvent) {
+    if (!spreadsheet_selection.active_cell || spreadsheet_selection.is_selecting) {
+        return;
+    }
+
+    const empty = false;
+    open_editor(spreadsheet_selection.active_cell, empty);
 }
 
 export function mouseup_handler() {
@@ -216,21 +223,34 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
     else if (event_key === SPREADSHEET_KEY.F2) {
         event.preventDefault();
 
-        if (spreadsheet_selection.active_cell === null) {
-            return;
-        }
-
-        const empty = true;
-        open_editor(spreadsheet_selection.active_cell, empty);
-        
-    }
-    else {
-        if (!spreadsheet_selection.active_cell || spreadsheet_editor) {
+        if (spreadsheet_editor || spreadsheet_selection.active_cell === null) {
             return;
         }
 
         const empty = false;
+        open_editor(spreadsheet_selection.active_cell, empty);
+        
+    }
+    else {
+        if (
+            event.ctrlKey ||
+            event.altKey ||
+            event.metaKey || 
+            !spreadsheet_selection.active_cell || 
+            spreadsheet_editor
+        ) {
+            return;
+        }
+
+        // Only printable characters start editing.
+        if (event.key.length !== 1) {
+            return;
+        }
+
+
+        const empty = true;
         open_editor(spreadsheet_selection.active_cell, empty)
+        
     }
 }
 

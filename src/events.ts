@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { keydown_handler, mousedown_handler, mouseeover_handler, mouseup_handler } from "./selection.ts";
+import { dblclick_handler, keydown_handler, mousedown_handler, mouseeover_handler, mouseup_handler } from "./selection.ts";
 import { copy_handler, paste_handler } from './clipboard.ts';
 
 export function register_events() {    
@@ -8,6 +8,7 @@ export function register_events() {
     // Mouse Events
     spreadsheet.on('mousedown', mousedown_handler);
     spreadsheet.on('mouseover', 'table tbody td', mouseeover_handler);
+    spreadsheet.on('dblclick', 'table tbody td', dblclick_handler);
     $(document).on('mouseup', mouseup_handler);
 
     // Keyboard Events

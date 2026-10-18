@@ -2,20 +2,11 @@
 import { $ } from 'jquery';
 import { register_events } from './events';
 import { columns, row_data } from './data';
+import { get_column_type_by_index, spreadsheet_editors } from './editor';
 
 // const columns = 20;
 // const rows = 40;
 const freeze_column = 3;
-
-function get_frozen_column_left(index: number, cell_width: number) {
-	const border_width = 0.5;
-
-	if (index === 0) {
-		return 0;
-	}
-
-	return cell_width + border_width + (index - 1) * cell_width;
-}
 
 function createSpreadsheet(freeze_column: number) {
 	const table = $('<table>', {
@@ -52,17 +43,23 @@ function createSpreadsheet(freeze_column: number) {
 		const bodyRow = $('<tr>');
 
 		for (let j = 0; j < columns.length; j++) {
-			const frozen_column_left = get_frozen_column_left(j, 69.25);
-
-			const td = $('<td>', {
-				text: row_data[i][j],
+			let td = $('<td>', {
 				'tabindex': '-1',
 				'role': 'gridcell',
 				'data-row': i,
 				'data-column': j,
 				class: j < freeze_column ? 'freeze-columns' : ''
-			});
+			}) as JQuery<HTMLTableCellElement>;
 
+			const column_type = get_column_type_by_index(j);
+				
+			if (column_type) {
+				const editor = spreadsheet_editors[column_type];
+				if (editor) {
+					td = editor.create_cell(td, i, j);
+				}
+			}
+			
 			bodyRow.append(td);
 		}
 
