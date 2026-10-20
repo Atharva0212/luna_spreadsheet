@@ -15,6 +15,7 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   outline: none;
+  position: relative;
 }
 
 .luna-spreadsheet th,
@@ -96,3 +97,18 @@
   user-select: text;
 }
 
+.luna-spreadsheet div.fill-handle {
+  margin: 10px;
+  height: 3.5px;
+  width: 3.5px;
+  background-color: black;
+  border: 1px solid white;
+  position: absolute;
+  display: none;
+  z-index: 9;
+  margin: 0;
+}
+
+.luna-spreadsheet .fill-range-cell {
+  outline: 1.1px dotted black;
+}

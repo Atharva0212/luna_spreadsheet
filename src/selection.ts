@@ -1,20 +1,21 @@
 import { $ } from "jquery";
-import { SPREADSHEET_KEY } from "./keyboard_constants";
 import { close_editor, open_editor, spreadsheet_editor } from "./editor";
+import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, set_fill_selection } from "./fill_handler";
+import { SPREADSHEET_KEY } from "./keyboard_constants";
 
 export type Cell = {
     row: number;
     column: number;
 };
 
-type CellRange = {
+export type CellRange = {
     start_row: number;
     start_column: number;
     end_row: number;
     end_column: number;
 };
 
-type SpreadsheetSelection = {
+export type SpreadsheetSelection = {
     active_cell: Cell | null;
     selected_cell_range: CellRange | null;
     is_selecting: boolean;
@@ -31,15 +32,15 @@ export function get_spreadsheet_selection() {
 }
 
 export function mousedown_handler(event: JQuery.MouseDownEvent) {
-    const cell = $(event.target).closest<HTMLTableCellElement>("th, td");
+    const target_element = $(event.target).closest<HTMLTableCellElement | HTMLDivElement>("th, td, div.fill-handle");
     
-    if (cell.length === 0) {
+    if (target_element.length === 0) {
         return;
     } 
     
-    if (cell.closest("thead").length > 0) {
+    if (target_element.closest("thead").length > 0) {
         event.preventDefault();
-        const column = Number(cell.attr('data-column'));
+        const column = Number(target_element.attr('data-column'));
         const column_body_cells = $('.luna-spreadsheet table tbody td[data-column="' + column + '"]');
 
         if (column_body_cells.length === 0) {
@@ -55,8 +56,8 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
 
         spreadsheet_selection.is_selecting = true;
     }
-    else if (cell.closest("tbody").length > 0) {
-        const coordinates = get_cell_coordinates(cell);
+    else if (target_element.closest("tbody").length > 0) {
+        const coordinates = get_cell_coordinates(target_element as JQuery<HTMLTableCellElement>);
 
         if (spreadsheet_editor && spreadsheet_editor.cell.row === coordinates.row && spreadsheet_editor.cell.column === coordinates.column) {
             return;
@@ -72,9 +73,24 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
         });
         spreadsheet_selection.is_selecting = true;
     }
+    else if (target_element.closest('div.fill-handle')) {
+        handle_fill_mousedown(spreadsheet_selection)
+    }
 }
 
 export function mouseeover_handler(event: JQuery.MouseOverEvent) {
+    
+    if (fill_selection && !spreadsheet_selection.is_selecting) {        
+        const td = $(event.target).closest("td");
+
+        if (td.length === 0) {
+            return;
+        }
+
+        handle_fill_mouseover(td);
+
+        return;
+    }
     if (!spreadsheet_selection.active_cell || !spreadsheet_selection.is_selecting) {
         return;
     }
@@ -102,6 +118,8 @@ export function dblclick_handler(event: JQuery.DoubleClickEvent) {
 
 export function mouseup_handler() {
     spreadsheet_selection.is_selecting = false;
+    // fill_selection = null;
+    set_fill_selection(null);
 }
 
 export function keydown_handler(event: JQuery.KeyDownEvent) {  
@@ -281,7 +299,15 @@ export function set_active_cell_and_range_selection(cell_range: CellRange) {
         start_column: cell_range.start_column,
         end_row: cell_range.end_row,
         end_column: cell_range.end_column,
-    })
+    });
+
+    const active_cell_rect = active_cell[0].getBoundingClientRect()
+
+    $('div.fill-handle').css({
+        display: 'block',
+        top: (active_cell_rect.bottom - 2) + 'px',
+        left: (active_cell_rect.right - 2) + 'px'
+    });
 }
 
 function set_selection(cell_range: CellRange) {
@@ -309,7 +335,7 @@ function update_selection(cell_range: CellRange) {
     }
 }
 
-function get_cell_coordinates(td: JQuery<HTMLTableCellElement>) {
+export function get_cell_coordinates(td: JQuery<HTMLTableCellElement>) {
     // Improve the logic
     return {
         row: Number(td.attr("data-row")),
