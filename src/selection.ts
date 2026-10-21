@@ -32,6 +32,8 @@ export function get_spreadsheet_selection() {
 }
 
 export function mousedown_handler(event: JQuery.MouseDownEvent) {
+    event.preventDefault();
+    
     const target_element = $(event.target).closest<HTMLTableCellElement | HTMLDivElement>("th, td, div.fill-handle");
     
     if (target_element.length === 0) {
