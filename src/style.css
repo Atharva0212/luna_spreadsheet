@@ -107,8 +107,10 @@
   display: none;
   z-index: 9;
   margin: 0;
+  cursor: crosshair;
+  background-color: rgb(75, 137, 255);
 }
 
 .luna-spreadsheet .fill-range-cell {
-  outline: 1.5px solid black;
+  outline: 1px solid red;
 }

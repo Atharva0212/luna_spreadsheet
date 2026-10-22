@@ -1,6 +1,6 @@
 import { $ } from "jquery";
 import { close_editor, open_editor, spreadsheet_editor } from "./editor";
-import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, set_fill_selection } from "./fill_handler";
+import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, position_fill_handle, unset_fill_selection } from "./fill_handler";
 import { SPREADSHEET_KEY } from "./keyboard_constants";
 
 export type Cell = {
@@ -120,8 +120,7 @@ export function dblclick_handler(event: JQuery.DoubleClickEvent) {
 
 export function mouseup_handler() {
     spreadsheet_selection.is_selecting = false;
-    // fill_selection = null;
-    set_fill_selection(null);
+    unset_fill_selection();
 }
 
 export function keydown_handler(event: JQuery.KeyDownEvent) {  
@@ -303,16 +302,10 @@ export function set_active_cell_and_range_selection(cell_range: CellRange) {
         end_column: cell_range.end_column,
     });
 
-    const active_cell_rect = active_cell[0].getBoundingClientRect()
-
-    $('div.fill-handle').css({
-        display: 'block',
-        top: (active_cell_rect.bottom - 2) + 'px',
-        left: (active_cell_rect.right - 2) + 'px'
-    });
+    position_fill_handle(active_cell[0]);
 }
 
-function set_selection(cell_range: CellRange) {
+export function set_selection(cell_range: CellRange) {
     spreadsheet_selection.selected_cell_range = cell_range;
 
     // For now
@@ -334,6 +327,12 @@ function update_selection(cell_range: CellRange) {
                 td.addClass('selected-cell')
             }
         }
+    }
+
+    const cell = get_cell_from_coordinates(end_row, end_column);
+
+    if (cell && cell.length > 0)  {
+        position_fill_handle(cell[0]);
     }
 }
 

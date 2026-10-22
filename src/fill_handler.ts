@@ -1,6 +1,6 @@
 import { $ } from "jquery";
 import type { ElementType } from "./editors/type";
-import { get_cell_coordinates, get_cell_from_coordinates, type Cell, type CellRange, type SpreadsheetSelection } from "./selection";
+import { get_cell_coordinates, get_cell_from_coordinates, type CellRange, type SpreadsheetSelection } from "./selection";
 
 type FillSelection = null | {
     source_range: CellRange,
@@ -9,9 +9,10 @@ type FillSelection = null | {
 
 export let fill_selection: FillSelection = null;
 
-export function set_fill_selection(value: FillSelection) {
-    fill_selection = value;
+export function unset_fill_selection() {
+    fill_selection = null;
     $(".luna-spreadsheet table tbody td.fill-range-cell").removeClass("fill-range-cell");
+
 }
 
 export function handle_fill_mousedown(spreadsheet_selection: SpreadsheetSelection) {
@@ -85,28 +86,28 @@ export function handle_fill_mouseover(td: ElementType) {
     const start_column = fill_selection.target_range.start_column;
     const end_row = fill_selection.target_range.end_row;
     const end_column = fill_selection.target_range.end_column;
-    console.log({
-        start_row : start_row,
-        start_column : start_column,
-        end_row : end_row,
-        end_column : end_column,
-    });
     
     for (let i = start_row; i < end_row + 1; i++) {
-        console.log('i', i);
-        console.log('start_column', start_column);
-        console.log('end_column', end_column);
         for (let j = start_column; j < end_column + 1; j++) {
-            const td = get_cell_from_coordinates(i, j);
+            const cell = get_cell_from_coordinates(i, j);
 
-            if (td && td.length > 0)  {
-                
-                td.addClass('fill-range-cell');
+            if (cell && cell.length > 0)  {
+                cell.addClass('fill-range-cell');
             }
         }   
     }
-    
 }
+
+export function position_fill_handle(cell: HTMLTableCellElement) {
+    const cell_rect = cell.getBoundingClientRect();
+
+        $('div.fill-handle').css({
+            display: 'block',
+            top: `${cell_rect.bottom - 2}px`,
+            left: `${cell_rect.right - 2}px`
+        });
+}
+
 
 function are_range_equal(source_range: CellRange, target_range: CellRange) {
     return (
