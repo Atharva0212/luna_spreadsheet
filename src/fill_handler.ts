@@ -1,6 +1,6 @@
 import { $ } from "jquery";
 import type { ElementType } from "./editors/type";
-import { get_cell_coordinates, get_cell_from_coordinates, type CellRange, type SpreadsheetSelection } from "./selection";
+import { get_cell_coordinates, get_cell_from_coordinates, get_spreadsheet_selection, type CellRange, type SpreadsheetSelection } from "./selection";
 
 type FillSelection = null | {
     source_range: CellRange,
@@ -10,9 +10,44 @@ type FillSelection = null | {
 export let fill_selection: FillSelection = null;
 
 export function unset_fill_selection() {
-    fill_selection = null;
     $(".luna-spreadsheet table tbody td.fill-range-cell").removeClass("fill-range-cell");
 
+    if (!fill_selection || !fill_selection.target_range) {
+        return;
+    }
+    
+    console.log(fill_selection.target_range);
+    console.log(fill_selection.source_range);
+    
+
+    if (fill_selection.target_range.end_row > fill_selection.source_range.end_row) {
+        console.log(fill_selection.target_range.end_row);
+        console.log(fill_selection.source_range.start_row);
+        
+        console.log("went down through rows");
+    }
+    else if (fill_selection.target_range.end_column > fill_selection.source_range.end_column) {
+        console.log(fill_selection.target_range.end_column);
+        console.log(fill_selection.source_range.start_column);
+        
+        console.log("went right through columns");
+    }
+    else if (fill_selection.target_range.start_row < fill_selection.source_range.start_row) {
+        console.log(fill_selection.target_range.start_row);
+        console.log(fill_selection.source_range.start_row);
+        
+        console.log("went up through rows");
+    }
+    else if (fill_selection.target_range.start_column < fill_selection.source_range.start_column) {
+        console.log(fill_selection.target_range.start_column);
+        console.log(fill_selection.source_range.start_column);
+        
+        console.log("went left through columns");
+    }
+    
+    
+    
+    fill_selection = null;
 }
 
 export function handle_fill_mousedown(spreadsheet_selection: SpreadsheetSelection) {
