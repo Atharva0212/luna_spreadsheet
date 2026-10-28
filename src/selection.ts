@@ -283,17 +283,11 @@ function normalize_range(start_row: CellRange['start_row'], start_column: CellRa
 }
 
 export function set_active_cell_and_range_selection(cell_range: CellRange) {
-    $(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
     close_editor(false);
 
     const active_cell = get_cell_from_coordinates(cell_range.start_row, cell_range.start_column) as JQuery<HTMLTableCellElement>;
-    active_cell[0].focus();
-    active_cell.addClass('active-cell');
-    
-    spreadsheet_selection.active_cell = {
-        row: cell_range.start_row,
-        column: cell_range.start_column,
-    };
+
+    set_active_cell({row: cell_range.start_row, column: cell_range.start_column}, active_cell);
 
     set_selection({
         start_row: cell_range.start_row,
@@ -305,6 +299,14 @@ export function set_active_cell_and_range_selection(cell_range: CellRange) {
     position_fill_handle(active_cell[0]);
 }
 
+export function set_active_cell(cell: Cell, active_cell: JQuery<HTMLTableCellElement>) {
+    $(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
+    active_cell[0].focus();
+    active_cell.addClass('active-cell');
+    
+    spreadsheet_selection.active_cell = cell;
+}
+
 export function set_selection(cell_range: CellRange) {
     spreadsheet_selection.selected_cell_range = cell_range;
 
@@ -313,7 +315,7 @@ export function set_selection(cell_range: CellRange) {
     update_selection(cell_range);
 }
 
-function update_selection(cell_range: CellRange) {
+export function update_selection(cell_range: CellRange) {
     const start_row = cell_range.start_row;
     const start_column = cell_range.start_column;
     const end_row = cell_range.end_row;

@@ -1,6 +1,8 @@
 import { $ } from "jquery";
 import type { ElementType } from "./editors/type";
-import { get_cell_coordinates, get_cell_from_coordinates, get_spreadsheet_selection, type CellRange, type SpreadsheetSelection } from "./selection";
+import { get_cell_coordinates, get_cell_from_coordinates, set_active_cell, set_selection, type CellRange, type SpreadsheetSelection } from "./selection";
+import { get_column_type_by_index, spreadsheet_editors } from "./editor";
+import { fill_cells_with_repeating_data } from "./clipboard";
 
 type FillSelection = null | {
     source_range: CellRange,
@@ -10,42 +12,61 @@ type FillSelection = null | {
 export let fill_selection: FillSelection = null;
 
 export function unset_fill_selection() {
+
     $(".luna-spreadsheet table tbody td.fill-range-cell").removeClass("fill-range-cell");
 
     if (!fill_selection || !fill_selection.target_range) {
         return;
     }
     
-    console.log(fill_selection.target_range);
-    console.log(fill_selection.source_range);
-    
+    let start_row;
+    let start_column;
+    let end_row;
+    let end_column;
 
     if (fill_selection.target_range.end_row > fill_selection.source_range.end_row) {
-        console.log(fill_selection.target_range.end_row);
-        console.log(fill_selection.source_range.start_row);
-        
-        console.log("went down through rows");
+        start_row = fill_selection.source_range.start_row;
+        start_column = fill_selection.source_range.start_column;
+        end_row = fill_selection.target_range.end_row;
+        end_column = fill_selection.target_range.end_column;
     }
     else if (fill_selection.target_range.end_column > fill_selection.source_range.end_column) {
-        console.log(fill_selection.target_range.end_column);
-        console.log(fill_selection.source_range.start_column);
-        
-        console.log("went right through columns");
+        start_row = fill_selection.source_range.start_row;
+        start_column = fill_selection.source_range.start_column;
+        end_row = fill_selection.target_range.end_row;
+        end_column = fill_selection.target_range.end_column;
     }
     else if (fill_selection.target_range.start_row < fill_selection.source_range.start_row) {
-        console.log(fill_selection.target_range.start_row);
-        console.log(fill_selection.source_range.start_row);
-        
-        console.log("went up through rows");
+        start_row = fill_selection.target_range.start_row;
+        start_column = fill_selection.target_range.start_column;
+        end_row = fill_selection.source_range.end_row;
+        end_column = fill_selection.source_range.end_column;
     }
     else if (fill_selection.target_range.start_column < fill_selection.source_range.start_column) {
-        console.log(fill_selection.target_range.start_column);
-        console.log(fill_selection.source_range.start_column);
-        
-        console.log("went left through columns");
+        start_row = fill_selection.target_range.start_row;
+        start_column = fill_selection.target_range.start_column;
+        end_row = fill_selection.source_range.end_row;
+        end_column = fill_selection.source_range.end_column;
     }
     
-    
+    if (start_row && start_column && end_row && end_column) {
+        const active_cell = get_cell_from_coordinates(start_row, start_column) as JQuery<HTMLTableCellElement>;
+        set_active_cell({row: start_row, column: start_column}, active_cell);
+        
+        const source_data = get_source_range_data(fill_selection);
+        const target_row_count = fill_selection.target_range.end_row - fill_selection.target_range.start_row + 1;
+        const target_column_count = fill_selection.target_range.end_column - fill_selection.target_range.start_column + 1;
+
+        fill_cells_with_repeating_data(source_data, fill_selection.target_range.start_row, fill_selection.target_range.start_column, target_row_count, target_column_count);
+        
+
+        set_selection({
+            start_row : start_row,
+            start_column : start_column,
+            end_row : end_row,
+            end_column : end_column,
+        });
+    }
     
     fill_selection = null;
 }
@@ -144,11 +165,38 @@ export function position_fill_handle(cell: HTMLTableCellElement) {
 }
 
 
-function are_range_equal(source_range: CellRange, target_range: CellRange) {
-    return (
-        source_range.start_row === target_range.start_row &&
-        source_range.start_column === target_range.start_column &&
-        source_range.end_row === target_range.end_row &&
-        source_range.end_column === target_range.end_column
-    );
+function get_source_range_data(fill_selection: Exclude<FillSelection, null>) {
+    const source_data = [];
+
+    for (let i = fill_selection.source_range.start_row; i < fill_selection.source_range.end_row + 1; i++) {
+        const row_data = [];
+        for (let j = fill_selection.source_range.start_column; j < fill_selection.source_range.end_column + 1; j++) {
+            const cell = get_cell_from_coordinates(i, j);
+
+            if (!cell) {
+                row_data.push('');
+                continue;
+            }
+
+            const column_type = get_column_type_by_index(j);
+            
+            if (!column_type) {
+                row_data.push('');
+                continue;
+            }
+            
+            const editor = spreadsheet_editors[column_type];
+            
+            if (!editor) {
+                row_data.push('');
+                continue;
+            }
+            
+            row_data.push(editor.get_value(cell));
+            
+        }
+        source_data.push(row_data);
+    }
+
+    return source_data;
 }

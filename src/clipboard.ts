@@ -83,11 +83,22 @@ export function paste_handler(event: JQuery.Event) {
     const max_rows = Math.max(selected_rows, copied_rows);
     const max_columns = Math.max(selected_columns, copied_columns);
 
-    for (let i = 0; i < max_rows; i++) {
-        const source_row = i % copied_rows;
+    fill_cells_with_repeating_data(copied_data, start_row, start_column, max_rows, max_columns);
+
+    set_active_cell_and_range_selection({
+        start_row: start_row,
+        start_column: start_column,
+        end_row: max_rows + start_row - 1,
+        end_column: max_columns + start_column - 1
+    });
+}
+
+export function fill_cells_with_repeating_data(copied_data: string[][], start_row: number, start_column: number, total_rows: number, total_columns: number) {
+    for (let i = 0; i < total_rows; i++) {
+        const source_row = i % copied_data.length;
         const row = copied_data[source_row];
 
-        for (let j = 0; j < max_columns; j++) {
+        for (let j = 0; j < total_columns; j++) {
             const source_column = j % row.length;
 
             const destination_row = start_row + i;
@@ -100,11 +111,4 @@ export function paste_handler(event: JQuery.Event) {
             }
         }
     }
-
-    set_active_cell_and_range_selection({
-        start_row: start_row,
-        start_column: start_column,
-        end_row: max_rows + start_row - 1,
-        end_column: max_columns + start_column - 1
-    });
 }
