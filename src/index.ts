@@ -3,12 +3,11 @@ import { $ } from 'jquery';
 import { register_events } from './events';
 import { columns, row_data } from './data';
 import { get_column_type_by_index, spreadsheet_editors } from './editor';
+import { get_cell_from_coordinates } from './selection';
 
-// const columns = 20;
-// const rows = 40;
 const freeze_column = 3;
 
-function createSpreadsheet(freeze_column: number) {
+function createSpreadsheet() {
 	const table = $('<table>', {
 		'tabindex': 0
 	});
@@ -40,7 +39,7 @@ function createSpreadsheet(freeze_column: number) {
 	const tbody = $('<tbody>');
 
 	for (let i = 0; i < row_data.length; i++) {
-		const bodyRow = $('<tr>');
+		const body_row = $('<tr>');
 
 		for (let j = 0; j < columns.length; j++) {
 			let td = $('<td>', {
@@ -48,7 +47,6 @@ function createSpreadsheet(freeze_column: number) {
 				'role': 'gridcell',
 				'data-row': i,
 				'data-column': j,
-				class: j < freeze_column ? 'freeze-columns' : ''
 			}) as JQuery<HTMLTableCellElement>;
 
 			const column_type = get_column_type_by_index(j);
@@ -60,10 +58,10 @@ function createSpreadsheet(freeze_column: number) {
 				}
 			}
 			
-			bodyRow.append(td);
+			body_row.append(td);
 		}
 
-		tbody.append(bodyRow);
+		tbody.append(body_row);
 	}
 
 	table.append(thead);
@@ -73,5 +71,37 @@ function createSpreadsheet(freeze_column: number) {
 	$('.luna-spreadsheet').append(table);
 }
 
-createSpreadsheet(freeze_column);
+function make_freeze_column(freeze_column: number) {
+	if (freeze_column === 0) {
+		return;
+	}
+
+	const max_rows = row_data.length;
+	const max_columns = columns.length;
+
+	for (let i = 0; i < max_columns; i++) {
+		
+		if (i >= freeze_column) {
+			return;
+		}
+		
+		const th = $('.luna-spreadsheet table thead tr th').eq(i);
+		const th_left_position = th[0].getBoundingClientRect().left;
+		th.css({
+			'left': th_left_position + 'px',
+			'z-index' : 999
+		});
+
+		for (let j = 0; j < max_rows; j++) {
+			const cell = get_cell_from_coordinates(j, i);
+			if (cell && cell.length > 0) {
+				cell.addClass('freeze-columns');
+				cell.css('left', th_left_position + 'px');
+			}
+		}
+	}
+}
+
+createSpreadsheet();
+make_freeze_column(freeze_column);
 register_events()
