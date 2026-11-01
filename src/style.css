@@ -3,6 +3,10 @@
   padding: 0;
 }
 
+/* main {
+  overflow: auto;
+} */
+
 .luna-spreadsheet table {
   --spreadsheet-border-line-width: 0.5px;
   --spreadsheet-border-color: #ccc;
@@ -105,7 +109,7 @@
   border: 1px solid white;
   position: absolute;
   display: none;
-  z-index: 9;
+  z-index: 999;
   margin: 0;
   cursor: crosshair;
   background-color: rgb(75, 137, 255);

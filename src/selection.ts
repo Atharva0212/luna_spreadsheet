@@ -4,27 +4,31 @@ import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, position_
 import { SPREADSHEET_KEY } from "./keyboard_constants";
 
 export type Cell = {
-    row: number;
-    column: number;
+    row : number;
+    column : number;
 };
 
 export type CellRange = {
-    start_row: number;
-    start_column: number;
-    end_row: number;
-    end_column: number;
+    start_row : number;
+    start_column : number;
+    end_row : number;
+    end_column : number;
 };
 
 export type SpreadsheetSelection = {
-    active_cell: Cell | null;
-    selected_cell_range: CellRange | null;
-    is_selecting: boolean;
+    active_cell : Cell | null;
+    selected_cell_range : CellRange | null;
+    is_selecting : boolean;
+    is_full_row_selected : boolean;
+    is_column_header_drag : boolean;
 };
 
 const spreadsheet_selection: SpreadsheetSelection = {
-    active_cell: null,
-    selected_cell_range: null,
-    is_selecting: false,
+    active_cell : null,
+    selected_cell_range : null,
+    is_selecting : false,
+    is_full_row_selected : false,
+    is_column_header_drag : false,
 };
 
 export function get_spreadsheet_selection() {
@@ -42,21 +46,31 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
     
     if (target_element.closest("thead").length > 0) {
         event.preventDefault();
+        
         const column = Number(target_element.attr('data-column'));
-        const column_body_cells = $('.luna-spreadsheet table tbody td[data-column="' + column + '"]');
+        const column_cell_count = target_element.closest('table').find(`tbody td[data-column="${column}"]`).length - 1;
 
-        if (column_body_cells.length === 0) {
+        if (column_cell_count === 0) {
             return;
         }
 
+        let start_column = column;
+        let end_column = column;
+
+        if (column === -1) {
+            start_column = 0;
+            end_column = target_element.closest('tr').find('th').length - 1;
+        }
+        
         set_active_cell_and_range_selection({
             start_row: 0,
-            start_column: column,
-            end_row: column_body_cells.length,
-            end_column: column
+            start_column: start_column,
+            end_row: column_cell_count,
+            end_column: end_column
         });
 
         spreadsheet_selection.is_selecting = true;
+        spreadsheet_selection.is_column_header_drag = true;
     }
     else if (target_element.closest("tbody").length > 0) {
         const coordinates = get_cell_coordinates(target_element as JQuery<HTMLTableCellElement>);
@@ -65,13 +79,22 @@ export function mousedown_handler(event: JQuery.MouseDownEvent) {
             return;
         }
 
+        let start_column = coordinates.column;
+        let end_column = coordinates.column;
+
+        if (coordinates.column === -1) {
+            start_column = 0;
+            end_column = target_element.closest('tr').find('td').length - 1;
+            spreadsheet_selection.is_full_row_selected = true;
+        }
+        
         event.preventDefault();
 
         set_active_cell_and_range_selection({
-            start_row: coordinates.row,
-            start_column: coordinates.column,
-            end_row: coordinates.row,
-            end_column: coordinates.column
+            start_row : coordinates.row,
+            start_column : start_column,
+            end_row : coordinates.row,
+            end_column : end_column
         });
         spreadsheet_selection.is_selecting = true;
     }
@@ -93,6 +116,7 @@ export function mouseeover_handler(event: JQuery.MouseOverEvent) {
 
         return;
     }
+    
     if (!spreadsheet_selection.active_cell || !spreadsheet_selection.is_selecting) {
         return;
     }
@@ -104,7 +128,18 @@ export function mouseeover_handler(event: JQuery.MouseOverEvent) {
     }
 
     const coordinates = get_cell_coordinates(td);
-    const selected_cell_range = normalize_range(spreadsheet_selection.active_cell.row, spreadsheet_selection.active_cell.column, coordinates.row, coordinates.column);
+    let end_row = coordinates.row;
+    let end_column = coordinates.column;
+
+    if (spreadsheet_selection.is_full_row_selected) {
+        end_column = td.closest('tr').find('td').length - 1;
+        console.log(end_column);
+    }
+    else if (spreadsheet_selection.is_column_header_drag) {
+        end_row = td.closest('tbody').find(`td[data-column="${coordinates.column}"]`).length;
+    }
+
+    const selected_cell_range = normalize_range(spreadsheet_selection.active_cell.row, spreadsheet_selection.active_cell.column, end_row, end_column);
 
     set_selection(selected_cell_range);
 }
@@ -120,6 +155,8 @@ export function dblclick_handler(event: JQuery.DoubleClickEvent) {
 
 export function mouseup_handler() {
     spreadsheet_selection.is_selecting = false;
+    spreadsheet_selection.is_full_row_selected = false;
+    spreadsheet_selection.is_column_header_drag = false;
     unset_fill_selection();
 }
 
@@ -172,8 +209,8 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
             start_row: row,
             start_column: column,
             end_row: row,
-            end_column: column
-        });  
+            end_column: column,
+    });  
     }
     else if (event_key === SPREADSHEET_KEY.TAB) {
         event.preventDefault();
@@ -282,7 +319,7 @@ function normalize_range(start_row: CellRange['start_row'], start_column: CellRa
     };
 }
 
-export function set_active_cell_and_range_selection(cell_range: CellRange) {
+export function set_active_cell_and_range_selection(cell_range: CellRange) {    
     close_editor(false);
 
     const active_cell = get_cell_from_coordinates(cell_range.start_row, cell_range.start_column) as JQuery<HTMLTableCellElement>;
@@ -296,7 +333,7 @@ export function set_active_cell_and_range_selection(cell_range: CellRange) {
         end_column: cell_range.end_column,
     });
 
-    position_fill_handle(active_cell[0]);
+    position_fill_handle(cell_range);
 }
 
 export function set_active_cell(cell: Cell, active_cell: JQuery<HTMLTableCellElement>) {
@@ -323,19 +360,19 @@ export function update_selection(cell_range: CellRange) {
 
     for (let i = start_row; i <= end_row; i++) {
         for (let j = start_column; j <= end_column; j++) {
+            if (j === -1) {
+                continue;
+            }
+            
             const td = get_cell_from_coordinates(i, j);
 
             if (td) {
-                td.addClass('selected-cell')
+                td.addClass('selected-cell');
             }
         }
     }
 
-    const cell = get_cell_from_coordinates(end_row, end_column);
-
-    if (cell && cell.length > 0)  {
-        position_fill_handle(cell[0]);
-    }
+    position_fill_handle(cell_range);
 }
 
 export function get_cell_coordinates(td: JQuery<HTMLTableCellElement>) {

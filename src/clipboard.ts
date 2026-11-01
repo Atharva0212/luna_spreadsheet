@@ -1,3 +1,4 @@
+import { get_column_type_by_index, spreadsheet_editors } from "./editor";
 import { get_cell_from_coordinates, get_spreadsheet_selection, set_active_cell_and_range_selection } from "./selection";
 
 let copied_data = '';
@@ -107,7 +108,18 @@ export function fill_cells_with_repeating_data(copied_data: string[][], start_ro
             const td = get_cell_from_coordinates(destination_row, destination_column);
 
             if (td && td.length > 0) {
-                td.html(row[source_column]);
+                const column_type = get_column_type_by_index(j);
+                
+                if (!column_type) {
+                    continue;
+                }
+                
+                const editor = spreadsheet_editors[column_type];
+                
+                if (!editor) {
+                    continue;
+                }
+                editor.set_value(td, row[source_column])
             }
         }
     }

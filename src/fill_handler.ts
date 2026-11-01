@@ -1,8 +1,10 @@
 import { $ } from "jquery";
 import type { ElementType } from "./editors/type";
-import { get_cell_coordinates, get_cell_from_coordinates, set_active_cell, set_selection, type CellRange, type SpreadsheetSelection } from "./selection";
+import { get_cell_coordinates, get_cell_from_coordinates, get_spreadsheet_selection, set_active_cell, set_selection, type CellRange, type SpreadsheetSelection } from "./selection";
 import { get_column_type_by_index, spreadsheet_editors } from "./editor";
 import { fill_cells_with_repeating_data } from "./clipboard";
+import { scroll_container } from ".";
+import { get_numeric_value } from "./utils";
 
 type FillSelection = null | {
     source_range: CellRange,
@@ -154,14 +156,36 @@ export function handle_fill_mouseover(td: ElementType) {
     }
 }
 
-export function position_fill_handle(cell: HTMLTableCellElement) {
-    const cell_rect = cell.getBoundingClientRect();
+export function position_fill_handle(cell_range: CellRange) {
+    let row, column;
+    const spreadsheet_selection = get_spreadsheet_selection();
+    const is_position_left = spreadsheet_selection.is_full_row_selected;
 
-        $('div.fill-handle').css({
-            display: 'block',
-            top: `${cell_rect.bottom - 2}px`,
-            left: `${cell_rect.right - 2}px`
-        });
+    if (is_position_left) {
+        row = cell_range.end_row;
+        column = cell_range.start_column;
+    }
+    else {
+        row = cell_range.end_row;
+        column = cell_range.end_column;
+    }
+
+    const cell = get_cell_from_coordinates(row, column);
+    
+    if (cell == null || cell.length === 0) {
+        return;
+    }
+
+    const cell_rect = cell[0].getBoundingClientRect();
+    const x_scroll_position = get_numeric_value($(scroll_container.x_scroll_container).scrollLeft());
+    const y_scroll_position = get_numeric_value($(scroll_container.y_scroll_container).scrollTop());
+    const fill_handle_x_position = x_scroll_position + (is_position_left ? (cell_rect.left - 3) : cell_rect.right - 2);
+
+    $('div.fill-handle').css({
+        display: 'block',
+        left: `${fill_handle_x_position}px`,
+        top: `${(y_scroll_position + cell_rect.bottom) - 2}px`,
+    });
 }
 
 

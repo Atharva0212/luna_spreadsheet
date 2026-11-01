@@ -12,9 +12,11 @@ export type SpreadsheetEditorMethods = {
     open_editor: (td: ElementType, empty: boolean) => string;
     close_editor: (td: ElementType, should_restore_original_value: boolean) => void;
     get_value: (td: ElementType) => string;
+    set_value: (td: ElementType, value: string) => void;
 };
 
 export type CreateCellParameters = Parameters<SpreadsheetEditorMethods['create_cell']>;
 export type OpenEditorParameters = Parameters<SpreadsheetEditorMethods['open_editor']>;
 export type CloseEditorParameters = Parameters<SpreadsheetEditorMethods['close_editor']>;
 export type GetValueParameters = Parameters<SpreadsheetEditorMethods['get_value']>;
+export type SetValueParameters = Parameters<SpreadsheetEditorMethods['set_value']>;

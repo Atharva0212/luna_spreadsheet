@@ -7,7 +7,7 @@ import { get_cell_from_coordinates } from './selection';
 
 const freeze_column = 3;
 
-function createSpreadsheet() {
+function create_spreadsheet() {
 	const table = $('<table>', {
 		'tabindex': 0
 	});
@@ -17,6 +17,19 @@ function createSpreadsheet() {
 	const colgroup = $('<colgroup>');
 	const header_row = $('<tr>');
 
+	const th = $('<th>', {
+		text: '',
+		'data-column': -1
+	});
+
+	header_row.append(th);
+
+	const col = $('<col>', {
+		style: 'min-width: 25px;'
+	});
+
+	colgroup.append(col);
+
 	for (let i = 0; i < columns.length; i++) {
 		const column = columns[i];
 
@@ -24,13 +37,14 @@ function createSpreadsheet() {
 			text: column.title,
 			'data-column': i
 		});
-		header_row.append(th);
-		
-		const col = $('<col>', {
-        	style: 'min-width: ' + column.width + 'px;'
-    	});
 
-    	colgroup.append(col);
+		header_row.append(th);
+
+		const col = $('<col>', {
+			style: 'min-width: ' + column.width + 'px;'
+		});
+
+		colgroup.append(col);
 	}
 
 	thead.append(header_row);
@@ -41,12 +55,21 @@ function createSpreadsheet() {
 	for (let i = 0; i < row_data.length; i++) {
 		const body_row = $('<tr>');
 
+		let sr_num_td = $('<td>', {
+			'role' : 'gridcell',
+			'data-row' : i,
+			'data-column' : -1,
+			'text' : i + 1,
+		}).css('text-align', 'center') as JQuery<HTMLTableCellElement>;
+
+		body_row.append(sr_num_td);
+
 		for (let j = 0; j < columns.length; j++) {
 			let td = $('<td>', {
-				'tabindex': '-1',
-				'role': 'gridcell',
-				'data-row': i,
-				'data-column': j,
+				'tabindex' : '-1',
+				'role' : 'gridcell',
+				'data-row' : i,
+				'data-column' : j,
 			}) as JQuery<HTMLTableCellElement>;
 
 			const column_type = get_column_type_by_index(j);
@@ -79,20 +102,22 @@ function make_freeze_column(freeze_column: number) {
 	const max_rows = row_data.length;
 	const max_columns = columns.length;
 
-	for (let i = 0; i < max_columns; i++) {
+	for (let i = -1; i < max_columns; i++) {
 		
 		if (i >= freeze_column) {
 			return;
 		}
 		
-		const th = $('.luna-spreadsheet table thead tr th').eq(i);
+		const th = $(`.luna-spreadsheet table thead tr th[data-column="${i}"]`);
+		console.log(th, i);
+		
 		const th_left_position = th[0].getBoundingClientRect().left;
 		th.css({
 			'left': th_left_position + 'px',
 			'z-index' : 999
 		});
 
-		for (let j = 0; j < max_rows; j++) {
+		for (let j = -1; j < max_rows; j++) {
 			const cell = get_cell_from_coordinates(j, i);
 			if (cell && cell.length > 0) {
 				cell.addClass('freeze-columns');
@@ -102,6 +127,31 @@ function make_freeze_column(freeze_column: number) {
 	}
 }
 
-createSpreadsheet();
+create_spreadsheet();
 make_freeze_column(freeze_column);
-register_events()
+register_events();
+
+function find_scroll_parent(element: HTMLElement, is_x_scroll: boolean) {
+    let parent = element.parentElement;
+    const scrollable_overflow_values = ['auto', 'scroll', 'overlay'];
+
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+
+        if (is_x_scroll
+				? scrollable_overflow_values.includes(style.overflowX)
+				: scrollable_overflow_values.includes(style.overflowY)
+        ) {
+            return parent;
+        }
+
+        parent = parent.parentElement;
+    }
+
+    return document.documentElement;
+}
+
+export const scroll_container = {
+	x_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], true),
+	y_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], true),
+}

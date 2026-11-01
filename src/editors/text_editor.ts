@@ -1,6 +1,6 @@
 import { $ } from "jquery";
 import { spreadsheet_editor } from "../editor";
-import type { CloseEditorParameters, CreateCellParameters, GetValueParameters, OpenEditorParameters } from "./type";
+import type { CloseEditorParameters, CreateCellParameters, GetValueParameters, OpenEditorParameters, SetValueParameters } from "./type";
 import { row_data } from "../data";
 
 export const text_editor_methods = {
@@ -46,4 +46,7 @@ export const text_editor_methods = {
     get_value: function(td: GetValueParameters[0]) {
         return td.text();
     },
+    set_value: function(td: SetValueParameters[0], value: SetValueParameters[1]) {
+        td.text(value);
+    }
 }
