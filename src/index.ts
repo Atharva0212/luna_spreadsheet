@@ -108,10 +108,9 @@ function make_freeze_column(freeze_column: number) {
 			return;
 		}
 		
-		const th = $(`.luna-spreadsheet table thead tr th[data-column="${i}"]`);
-		console.log(th, i);
-		
+		const th = $(`.luna-spreadsheet table thead tr th[data-column="${i}"]`);		
 		const th_left_position = th[0].getBoundingClientRect().left;
+		
 		th.css({
 			'left': th_left_position + 'px',
 			'z-index' : 999
@@ -153,5 +152,7 @@ function find_scroll_parent(element: HTMLElement, is_x_scroll: boolean) {
 
 export const scroll_container = {
 	x_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], true),
-	y_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], true),
+	y_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], false),
 }
+
+$(scroll_container.x_scroll_container).css('position', 'relative');

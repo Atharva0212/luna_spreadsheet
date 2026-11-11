@@ -1,6 +1,7 @@
 import { columns } from "./data";
 import { text_editor_methods } from "./editors/text_editor";
 import type { SpreadsheetEditor, SpreadsheetEditorMethods } from "./editors/type";
+import { unset_fill_handle } from "./fill_handler";
 import { get_cell_from_coordinates, type Cell } from "./selection";
 
 export let spreadsheet_editor: SpreadsheetEditor = null;
@@ -27,6 +28,8 @@ export function open_editor(cell_coordinates: Cell, empty: boolean) {
     if (!editor) {
         return;
     }
+
+    unset_fill_handle();
 
     const original_value = editor.open_editor(td, empty);
 

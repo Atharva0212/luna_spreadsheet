@@ -1,120 +1,119 @@
 * {
-  margin: 0;
-  padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 /* main {
   overflow: auto;
 } */
 
+.luna-spreadsheet {
+	width: max-content;
+}
+
 .luna-spreadsheet table {
-  --spreadsheet-border-line-width: 0.5px;
-  --spreadsheet-border-color: #ccc;
-  --spreadsheet-header-background: #e2e4e5;
-  --spreadsheet-selection-color: #dbeafe;
-  --spreadsheet-selection-outline-color: #3b82f6;
-  border-collapse: separate;
-  border-spacing: 0;
-  user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  outline: none;
-  position: relative;
+	--spreadsheet-border-line-width: 0.5px;
+	--spreadsheet-border-color: #ccc;
+	--spreadsheet-header-background: #e2e4e5;
+	--spreadsheet-selection-color: #dbeafe;
+	--spreadsheet-selection-outline-color: #3b82f6;
+	border-collapse: separate;
+	border-spacing: 0;
+	user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	outline: none;
+	position: relative;
 }
 
 .luna-spreadsheet th,
 .luna-spreadsheet td {
-  border: 0;
-  border-right: var(--spreadsheet-border-line-width) solid
-    var(--spreadsheet-border-color);
-  border-bottom: var(--spreadsheet-border-line-width) solid
-    var(--spreadsheet-border-color);
-  font-size: 13px;
-  line-height: 1.1;
-  text-wrap: nowrap;
-  background-color: white;
-  /* table-layout: fixed; */
+	border: 0;
+	border-right: var(--spreadsheet-border-line-width) solid var(--spreadsheet-border-color);
+	border-bottom: var(--spreadsheet-border-line-width) solid var(--spreadsheet-border-color);
+	font-size: 13px;
+	line-height: 1.1;
+	text-wrap: nowrap;
+	background-color: white;
+	/* table-layout: fixed; */
 }
 
 .luna-spreadsheet table {
-  font-size: 13px;
+	font-size: 13px;
 }
 
-/* .luna-spreadsheet tr > :first-child {
-  border-left: var(--spreadsheet-border-line-width) solid
-    var(--spreadsheet-border-color);
-} */
-
-.luna-spreadsheet thead tr:first-child > * {
-  border-top: var(--spreadsheet-border-line-width) solid
-    var(--spreadsheet-border-color);
+.luna-spreadsheet thead tr:first-child>* {
+	border-top: var(--spreadsheet-border-line-width) solid var(--spreadsheet-border-color);
 }
 
-.luna-spreadsheet tbody tr:first-child > * {
-  border-top: 0;
+.luna-spreadsheet tbody tr:first-child>* {
+	border-top: 0;
 }
 
 .luna-spreadsheet table thead tr th {
-  background-color: var(--spreadsheet-header-background);
+	background-color: var(--spreadsheet-header-background);
 }
 
 .luna-spreadsheet thead tr th {
-  position: sticky;
-  top: 0;
-  z-index: 99;
-  /* cursor: pointer; */
+	position: sticky;
+	top: 0;
+	z-index: 99;
+	/* cursor: pointer; */
 }
 
 .luna-spreadsheet tbody tr td.freeze-columns {
-  position: sticky;
-  z-index: 9;
+	position: sticky;
+	z-index: 9;
 }
 
 .luna-spreadsheet table tbody td.selected-cell {
-  background-color: var(--spreadsheet-selection-color);
-  /* box-shadow: inset 0 0 0 1px #3b82f6; */
-  outline: 1px solid #3b82f6;
+	background-color: var(--spreadsheet-selection-color);
+	/* box-shadow: inset 0 0 0 1px #3b82f6; */
+	outline: 1px solid #3b82f6;
 }
 
 .luna-spreadsheet table tbody td.selected-cell-left-border {
-  box-shadow: 1.5px 0px 1.5px rgba(0, 120, 215, 0.8);
+	box-shadow: 1.5px 0px 1.5px rgba(0, 120, 215, 0.8);
 }
 
 .luna-spreadsheet table tbody td.selected-cell-top-border {
-  box-shadow: 0px -1.5px 0px 0px rgba(0, 120, 215, 0.8);
+	box-shadow: 0px -1.5px 0px 0px rgba(0, 120, 215, 0.8);
 }
 
 .luna-spreadsheet table tbody td.active-cell {
-  background-color: var(--spreadsheet-selection-color);
-  outline: 1.5px solid #2563eb;;
+	background-color: var(--spreadsheet-selection-color);
+	outline: 1.5px solid #2563eb;
 }
-
 
 .luna-spreadsheet table tbody td .text-editor {
-  width: 100%;
-  max-height: 100%;
-  box-sizing: border-box;
-  border: 0;
-  font-size: 11.5px;
-  outline: none;
-  font-family: inherit;
-  user-select: text;
-}
-
-.luna-spreadsheet div.fill-handle {
-  margin: 10px;
-  height: 3.5px;
-  width: 3.5px;
-  background-color: black;
-  border: 1px solid white;
-  position: absolute;
-  display: none;
-  z-index: 999;
-  margin: 0;
-  cursor: crosshair;
-  background-color: rgb(75, 137, 255);
+	width: 100%;
+	max-height: 100%;
+	box-sizing: border-box;
+	border: 0;
+	font-size: 11.5px;
+	outline: none;
+	font-family: inherit;
+	user-select: text;
 }
 
 .luna-spreadsheet .fill-range-cell {
-  outline: 1px solid red;
+	outline: 1px solid red;
+}
+
+div.luna-spreadsheet {
+	/* position: relative; */
+}
+
+div.fill-handle-wrapper {
+	display: none;
+	position: absolute;
+	width: 100%;
+	cursor: crosshair;
+}
+
+div.fill-handle-wrapper > div.fill-handle {
+	width: 3px;
+	height: 3px;
+	border: 1px solid white;
+	background-color: rgb(75, 137, 255);
 }
