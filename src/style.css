@@ -86,8 +86,7 @@
 }
 
 .luna-spreadsheet table tbody td .text-editor {
-	width: 100%;
-	max-height: 100%;
+	width: 68.75px;
 	box-sizing: border-box;
 	border: 0;
 	font-size: 11.5px;
@@ -107,7 +106,6 @@ div.luna-spreadsheet {
 div.fill-handle-wrapper {
 	display: none;
 	position: absolute;
-	width: 100%;
 	cursor: crosshair;
 }
 

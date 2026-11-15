@@ -179,9 +179,8 @@ export function position_fill_handle(cell_range: CellRange) {
 	}
 
 	const cell_rect = cell[0].getBoundingClientRect();
-	const x_scroll_position = get_numeric_value($(scroll_container.x_scroll_container).scrollLeft());
 	const y_scroll_position = get_numeric_value($(scroll_container.y_scroll_container).scrollTop());
-	const fill_handle_x_position = x_scroll_position + (is_position_left ? (cell_rect.left - 4)  : cell_rect.right - 2);
+	const fill_handle_x_position = (is_position_left ? (cell_rect.left - 4)  : cell_rect.right - 2);
 	const fill_handle_y_position = y_scroll_position + cell_rect.bottom - 2;
 
 	if (cell.hasClass('freeze-columns')) {
@@ -198,10 +197,12 @@ export function position_fill_handle(cell_range: CellRange) {
 		});
 	}
 	else {
+		const x_scroll_position = get_numeric_value($(scroll_container.x_scroll_container).scrollLeft());
+		const fill_handle_x_position_with_scroll = x_scroll_position + fill_handle_x_position;
 		$('div.fill-handle-wrapper').css({
 			display : 'block',
 			top : `${fill_handle_y_position}px`,
-			left : `${fill_handle_x_position}px`,
+			left : `${fill_handle_x_position_with_scroll}px`,
 			zIndex : 9,
 		});
 

@@ -174,162 +174,10 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 	const event_key = event.key;
 
 	if (event_key === SPREADSHEET_KEY.ENTER) {
-		event.preventDefault();
-
-		if (spreadsheet_selection.active_cell) {
-			const active_cell_row = spreadsheet_selection.active_cell.row;
-			const active_cell_column = spreadsheet_selection.active_cell.column;
-			const td = get_cell_from_coordinates(active_cell_row, active_cell_column);
-
-			if (!td || td.length === 0) {
-				return;
-			}
-
-			const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
-			console.log(selected_cell_range);
-			
-			if (selected_cell_range.end_row > selected_cell_range.start_row
-				|| selected_cell_range.end_column > selected_cell_range.start_column) {
-				const row_count = Math.max(1, selected_cell_range.start_row - selected_cell_range.end_row);
-				const column_count = Math.max(1, selected_cell_range.start_column - selected_cell_range.end_column);
-				let row, column;
-
-				if (active_cell_column === selected_cell_range.end_column) {
-					row = ((active_cell_row + 1) % row_count) + selected_cell_range.start_row;
-					column = selected_cell_range.start_column;
-				}
-				else {
-					row = active_cell_row;
-					column = active_cell_column + 1;
-				}
-
-				set_active_cell({
-					row : row,
-					column : column
-				});
-			}
-			else {
-				const tr = td.closest('tr');
-				let row, column = 0;
-
-				if (event.shiftKey) {
-					if (td.is(":first-of-type")) {
-						const row_count = td.closest("tbody").find('tr').length;
-						const column_count = td.closest('tr').find('td').length;
-
-						row = row_count - 1;
-						column = (active_cell_column - 1 + column_count) % column_count;
-					}
-					else {
-						row = active_cell_row - 1;
-						column = active_cell_column;
-					}
-				}
-				else {
-					if (tr.is(":last-of-type")) {
-						const row_count = td.closest('tbody').find('tr').length;
-						const column_count = td.closest('tr').find('td[tabindex="-1"]').length;
-
-						row = (active_cell_row + 1) % row_count;
-						column = (active_cell_column + 1) % column_count;
-
-					}
-					else {
-						row = active_cell_row + 1;
-						column = active_cell_column;
-					}
-				}
-
-				set_active_cell_and_range_selection({
-					start_row: row,
-					start_column: column,
-					end_row: row,
-					end_column: column,
-				});
-			}
-		}
+		handle_enter_key_navigation(event);
 	}
 	else if (event_key === SPREADSHEET_KEY.TAB) {
-		event.preventDefault();
-
-		if (spreadsheet_selection.active_cell) {
-			const active_cell_row = spreadsheet_selection.active_cell.row;
-			const active_cell_column = spreadsheet_selection.active_cell.column;
-			const td = get_cell_from_coordinates(active_cell_row, active_cell_column);
-
-			if (!td || td.length === 0) {
-				return;
-			}
-
-			const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
-			
-			if (selected_cell_range.end_row > selected_cell_range.start_row
-				|| selected_cell_range.end_column > selected_cell_range.start_column) {
-				const row_count = (selected_cell_range.end_row - selected_cell_range.start_row) + 1; // inclusive row count
-				const normalized_row = active_cell_row - selected_cell_range.start_row;
-				let row, column;
-
-				if (event.shiftKey) {
-					if (active_cell_column === selected_cell_range.start_column) {
-						row = ((normalized_row - 1 + row_count) % row_count) + selected_cell_range.start_row;
-						column = selected_cell_range.end_column;
-					}
-					else {
-						row = active_cell_row;
-						column = active_cell_column - 1;
-					}
-				}
-				else {
-					if (active_cell_column === selected_cell_range.end_column) {
-						row = ((normalized_row + 1) % row_count) + selected_cell_range.start_row;
-						column = selected_cell_range.start_column;
-					}
-					else {
-						row = active_cell_row;
-						column = active_cell_column + 1;
-					}
-				}
-
-				set_active_cell({
-					row : row,
-					column : column
-				});
-			}
-			else {
-				let row, column = 0;
-
-				if (event.shiftKey) {
-					if (td.is(td.closest('tr').find('td[tabindex="-1"]').first())) {
-
-						const row_count = td.closest("tbody").find('tr').length;
-
-						row = (active_cell_row - 1 + row_count) % row_count;
-						column = Math.max(0, td.closest('tr').find('td[tabindex="-1"]').length - 1);
-					}
-					else {
-						row = active_cell_row;
-						column = active_cell_column - 1;
-					}
-				}
-				else {
-					if (td.is(":last-of-type")) {
-						const row_count = td.closest("tbody").find("tr").length;
-						row = (active_cell_row + 1) % row_count;
-					}
-					else {
-						row = active_cell_row;
-						column = active_cell_column + 1;
-					}
-				}
-
-				set_active_cell_and_range_selection({
-					start_row: row,
-					start_column: column,
-					end_row: row,
-					end_column: column
-				});
-			}
-		}
+		handle_tab_key_navigation(event)
 	}
 	else if (event_key === SPREADSHEET_KEY.BACKSPACE || event_key === SPREADSHEET_KEY.DELETE) {
 		event.preventDefault();
@@ -413,11 +261,12 @@ function apply_cell_range_selection(cell_range: CellRange) {
 }
 
 export function set_active_cell(cell: Cell) {
-	$(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
-
-	if (cell.column === -1) {
+	if (cell.row === -1 ||cell.column === -1) {
+		console.error('Invalid active cell coordinates:', cell);
 		return;
 	}
+	
+	$(".luna-spreadsheet table tbody td.active-cell").removeClass("active-cell");
 
 	const active_cell = get_cell_from_coordinates(cell.row, cell.column) as JQuery<HTMLTableCellElement>;
 
@@ -487,3 +336,188 @@ export function get_cell_from_coordinates(row: number, column: number): JQuery<H
 //         // right border
 //     }
 // }
+
+function handle_tab_key_navigation(event: JQuery.KeyDownEvent) {
+	event.preventDefault();
+
+	if (!spreadsheet_selection.active_cell) {
+		return;
+	}
+
+	const active_cell_row = spreadsheet_selection.active_cell.row;
+	const active_cell_column = spreadsheet_selection.active_cell.column;
+	const td = get_cell_from_coordinates(active_cell_row, active_cell_column);
+
+	if (!td || td.length === 0) {
+		return;
+	}
+
+	const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
+	
+	if (selected_cell_range.end_row > selected_cell_range.start_row
+		|| selected_cell_range.end_column > selected_cell_range.start_column) {
+		const row_count = (selected_cell_range.end_row - selected_cell_range.start_row) + 1; // inclusive row count
+		const normalized_row = active_cell_row - selected_cell_range.start_row;
+		
+		let row, column;
+
+		if (event.shiftKey) {
+			if (active_cell_column === selected_cell_range.start_column) {
+				row = ((normalized_row - 1 + row_count) % row_count) + selected_cell_range.start_row;
+				column = selected_cell_range.end_column;
+			}
+			else {
+				row = active_cell_row;
+				column = active_cell_column - 1;
+			}
+		}
+		else {
+			if (active_cell_column === selected_cell_range.end_column) {
+				row = ((normalized_row + 1) % row_count) + selected_cell_range.start_row;
+				column = selected_cell_range.start_column;
+			}
+			else {
+				row = active_cell_row;
+				column = active_cell_column + 1;
+			}
+		}
+
+		set_active_cell({
+			row : row,
+			column : column
+		});
+	}
+	else {
+		let row, column = 0;
+
+		if (event.shiftKey) {
+			if (td.is(td.closest('tr').find('td[tabindex="-1"]').first())) {
+
+				const row_count = td.closest("tbody").find('tr').length;
+
+				row = (active_cell_row - 1 + row_count) % row_count;
+				column = Math.max(0, td.closest('tr').find('td[tabindex="-1"]').length - 1);
+			}
+			else {
+				row = active_cell_row;
+				column = active_cell_column - 1;
+			}
+		}
+		else {
+			if (td.is(":last-of-type")) {
+				const row_count = td.closest("tbody").find("tr").length;
+				row = (active_cell_row + 1) % row_count;
+			}
+			else {
+				row = active_cell_row;
+				column = active_cell_column + 1;
+			}
+		}
+
+		set_active_cell_and_range_selection({
+			start_row: row,
+			start_column: column,
+			end_row: row,
+			end_column: column
+		});
+	}
+
+}
+
+function handle_enter_key_navigation(event: JQuery.KeyDownEvent) {
+	event.preventDefault();
+
+	if (!spreadsheet_selection.active_cell) {
+		return;
+	}
+
+	const active_cell_row = spreadsheet_selection.active_cell.row;
+	const active_cell_column = spreadsheet_selection.active_cell.column;
+	const td = get_cell_from_coordinates(active_cell_row, active_cell_column);
+
+	if (!td || td.length === 0) {
+		return;
+	}
+
+	const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
+	
+	if (selected_cell_range.end_row > selected_cell_range.start_row
+		|| selected_cell_range.end_column > selected_cell_range.start_column) {
+		const column_count = (selected_cell_range.end_column - selected_cell_range.start_column) + 1; // inclusive row count
+		const normalized_column = active_cell_column - selected_cell_range.start_column;
+		let row, column;
+		
+		if (event.shiftKey) {
+			if (active_cell_row === selected_cell_range.start_row) {
+				row = selected_cell_range.end_row;
+				column = ((normalized_column - 1 + column_count) % column_count) + selected_cell_range.start_column;
+			}
+			else {
+				row = active_cell_row - 1;
+				column = active_cell_column;
+			}
+		}
+		else {
+			if (active_cell_row === selected_cell_range.end_row) {
+				row = selected_cell_range.start_row;
+				column = ((normalized_column + 1) % column_count) + selected_cell_range.start_column;
+			}
+			else {
+				row = active_cell_row + 1;
+				column = active_cell_column;
+			}
+		}
+
+		set_active_cell({
+			row : row,
+			column : column
+		});
+	}
+	else {
+		if (spreadsheet_editor) {
+			close_editor(true);
+
+			const tr = td.closest('tr');
+			let row, column = 0;
+
+			if (event.shiftKey) {
+				if (td.is(":first-of-type")) {
+					const row_count = td.closest("tbody").find('tr').length;
+					const column_count = td.closest('tr').find('td').length;
+
+					row = row_count - 1;
+					column = (active_cell_column - 1 + column_count) % column_count;
+				}
+				else {
+					row = active_cell_row - 1;
+					column = active_cell_column;
+				}
+			}
+			else {
+				if (tr.is(":last-of-type")) {
+					const row_count = td.closest('tbody').find('tr').length;
+					const column_count = td.closest('tr').find('td[tabindex="-1"]').length;
+
+					row = (active_cell_row + 1) % row_count;
+					column = (active_cell_column + 1) % column_count;
+
+				}
+				else {
+					row = active_cell_row + 1;
+					column = active_cell_column;
+				}
+			}
+
+			set_active_cell_and_range_selection({
+				start_row : row,
+				start_column : column,
+				end_row : row,
+				end_column : column,	
+			});
+		}
+		else {
+			const empty = false;
+			open_editor(spreadsheet_selection.active_cell, empty);
+		}
+	}
+}

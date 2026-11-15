@@ -155,4 +155,7 @@ export const scroll_container = {
 	y_scroll_container : find_scroll_parent($('.luna-spreadsheet')[0], false),
 }
 
+const spreadsheet_width = $('.luna-spreadsheet').outerWidth(true);
+$('div.fill-handle-wrapper').css('width', spreadsheet_width + 'px');
+
 $(scroll_container.x_scroll_container).css('position', 'relative');
