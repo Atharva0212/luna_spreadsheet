@@ -9,4 +9,5 @@ export const SPREADSHEET_KEY = {
     ARROW_LEFT: "ArrowLeft",
     ARROW_RIGHT: "ArrowRight",
     F2: "F2",
+    SPACE: " ",
 } as const;

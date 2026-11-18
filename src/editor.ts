@@ -1,4 +1,5 @@
 import { columns } from "./data";
+import { checkbox_editor_methods } from "./editors/checkbox_editor";
 import { text_editor_methods } from "./editors/text_editor";
 import type { SpreadsheetEditor, SpreadsheetEditorMethods } from "./editors/type";
 import { unset_fill_handle } from "./fill_handler";
@@ -7,7 +8,8 @@ import { get_cell_from_coordinates, type Cell } from "./selection";
 export let spreadsheet_editor: SpreadsheetEditor = null;
 
 export const spreadsheet_editors: Partial<Record<typeof columns[number]['type'], SpreadsheetEditorMethods>> = {
-text: text_editor_methods,
+	text: text_editor_methods,
+	checkbox: checkbox_editor_methods,
 };
 
 export function open_editor(cell_coordinates: Cell, empty: boolean) {
@@ -36,7 +38,7 @@ export function open_editor(cell_coordinates: Cell, empty: boolean) {
 	spreadsheet_editor = {
 		cell: cell_coordinates,
 		original_value: original_value,
-	};    
+	};
 }
 
 export function close_editor(should_restore_original_value: boolean) {

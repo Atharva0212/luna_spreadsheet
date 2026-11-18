@@ -1,5 +1,5 @@
 import { $ } from "jquery";
-import { close_editor, open_editor, spreadsheet_editor } from "./editor";
+import { close_editor, get_column_type_by_index, open_editor, spreadsheet_editor } from "./editor";
 import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, position_fill_handle, unset_fill_handle, unset_fill_selection } from "./fill_handler";
 import { SPREADSHEET_KEY } from "./keyboard_constants";
 
@@ -208,6 +208,34 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 		const empty = false;
 		open_editor(spreadsheet_selection.active_cell, empty);
 
+	}
+	else if (event_key === SPREADSHEET_KEY.SPACE) {
+		const active_cell = spreadsheet_selection.active_cell;
+
+		if (!spreadsheet_selection.selected_cell_range ||!active_cell) {
+			return;
+		}
+
+		const active_cell_td = get_cell_from_coordinates(active_cell.row, active_cell.column);
+
+		if (active_cell_td && active_cell_td.length > 0) {
+			const column_type = get_column_type_by_index(active_cell.column);
+
+			if (column_type && column_type !== "checkbox") {
+				const editor = spreadsheet_editors[column_type];
+				
+				if (editor) {
+					const original_value = editor.open_editor(active_cell_td, true);
+					// spreadsheet_editor = {
+					// 	cell: cell_coordinates,
+					// 	original_value: original_value,
+					// };
+				}
+			}
+			
+		}
+
+		
 	}
 	else {
 		if (

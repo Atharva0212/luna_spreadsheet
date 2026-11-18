@@ -9,7 +9,7 @@ const types = [
 
 export const columns = [
     { title: 'A', width: 70, type: 'text' },
-    { title: 'B', width: 75, type: 'text' },
+    { title: 'B', width: 75, type: 'checkbox' },
     { title: 'C', width: 75, type: 'text' },
     { title: 'D', width: 69.25, type: 'text' },
     { title: 'E', width: 69.25, type: 'text' },
