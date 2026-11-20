@@ -1,7 +1,8 @@
 import { $ } from "jquery";
-import { close_editor, get_column_type_by_index, open_editor, spreadsheet_editor } from "./editor";
+import { close_editor, get_column_type_by_index, open_editor, spreadsheet_editor, spreadsheet_editors, update_spreadsheet_editor } from "./editor";
 import { fill_selection, handle_fill_mousedown, handle_fill_mouseover, position_fill_handle, unset_fill_handle, unset_fill_selection } from "./fill_handler";
 import { SPREADSHEET_KEY } from "./keyboard_constants";
+import { checkbox_editor_methods } from "./editors/checkbox_editor";
 
 export type Cell = {
 	row: number;
@@ -210,31 +211,43 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 
 	}
 	else if (event_key === SPREADSHEET_KEY.SPACE) {
-		const active_cell = spreadsheet_selection.active_cell;
+		if (spreadsheet_editor === null) {
+			const selected_cell_range = spreadsheet_selection.selected_cell_range;
+			const active_cell = spreadsheet_selection.active_cell;
 
-		if (!spreadsheet_selection.selected_cell_range ||!active_cell) {
-			return;
-		}
+			if (!selected_cell_range ||!active_cell) {
+				return;
+			}
 
-		const active_cell_td = get_cell_from_coordinates(active_cell.row, active_cell.column);
-
-		if (active_cell_td && active_cell_td.length > 0) {
+			const active_cell_td = get_cell_from_coordinates(active_cell.row, active_cell.column) as JQuery<HTMLTableCellElement>;
 			const column_type = get_column_type_by_index(active_cell.column);
 
-			if (column_type && column_type !== "checkbox") {
+			if (column_type && column_type !== 'checkbox') {
 				const editor = spreadsheet_editors[column_type];
 				
 				if (editor) {
 					const original_value = editor.open_editor(active_cell_td, true);
-					// spreadsheet_editor = {
-					// 	cell: cell_coordinates,
-					// 	original_value: original_value,
-					// };
+
+					unset_fill_handle();
+
+					update_spreadsheet_editor({
+						cell: active_cell,
+						original_value: original_value,
+					});
 				}
 			}
-			
-		}
 
+			for (let i = selected_cell_range.start_row; i <= selected_cell_range.end_row; i++) {
+				for (let j = selected_cell_range.start_column; j <= selected_cell_range.end_column; j++) {
+					const column_type = get_column_type_by_index(j);
+
+					if (column_type === 'checkbox') {
+						const td = get_cell_from_coordinates(i, j) as JQuery<HTMLTableCellElement>;
+						checkbox_editor_methods.open_editor(td);
+					}
+				}
+			}
+		}
 		
 	}
 	else {
@@ -255,7 +268,7 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 
 
 		const empty = true;
-		open_editor(spreadsheet_selection.active_cell, empty)
+		open_editor(spreadsheet_selection.active_cell, empty);
 
 	}
 }

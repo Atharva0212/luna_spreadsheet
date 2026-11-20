@@ -7,6 +7,10 @@ import { get_cell_from_coordinates, type Cell } from "./selection";
 
 export let spreadsheet_editor: SpreadsheetEditor = null;
 
+export function update_spreadsheet_editor(editor: SpreadsheetEditor) {
+	spreadsheet_editor = editor;
+}
+
 export const spreadsheet_editors: Partial<Record<typeof columns[number]['type'], SpreadsheetEditorMethods>> = {
 	text: text_editor_methods,
 	checkbox: checkbox_editor_methods,
