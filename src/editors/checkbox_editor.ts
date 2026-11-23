@@ -1,3 +1,4 @@
+import { $ } from "jquery";
 import type { CreateCellParameters, GetValueParameters, OpenEditorParameters, SetValueParameters } from "./type";
 // import 'jquery-ui/dist/themes/base/jquery-ui.css';
 // import 'jquery-ui/dist/jquery-ui.js';
@@ -5,8 +6,18 @@ import type { CreateCellParameters, GetValueParameters, OpenEditorParameters, Se
 
 export const checkbox_editor_methods = {
 	create_cell: function(td: CreateCellParameters[0], row: CreateCellParameters[1], column: CreateCellParameters[2]) {
-		td.html(`<input type="checkbox" id="checkbox_${row}_${column}">`);
-		td.css({'display' : 'flex', 'justify-content' : 'center'});
+		const input = $('<input>', {
+			type: 'checkbox',
+			id: `checkbox_${row}_${column}`
+		});
+
+		input.css({
+			width: '100%',
+			display: 'flex'
+		});
+
+		td.empty().append(input);
+
 		return td;
 	},
 	open_editor: function (td: OpenEditorParameters[0]) {

@@ -251,6 +251,9 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 		}
 		
 	}
+	else if (event_key === SPREADSHEET_KEY.ESCAPE) {
+		close_editor(true);
+	}
 	else {
 		if (
 			event.ctrlKey ||
@@ -517,7 +520,7 @@ function handle_enter_key_navigation(event: JQuery.KeyDownEvent) {
 	}
 	else {
 		if (spreadsheet_editor) {
-			close_editor(true);
+			close_editor(false);
 
 			const tr = td.closest('tr');
 			let row, column = 0;
