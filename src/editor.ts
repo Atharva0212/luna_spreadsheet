@@ -9,6 +9,8 @@ export let spreadsheet_editor: SpreadsheetEditor = null;
 
 export function update_spreadsheet_editor(editor: SpreadsheetEditor) {
 	spreadsheet_editor = editor;
+	console.log(spreadsheet_editor);
+	
 }
 
 export const spreadsheet_editors: Partial<Record<typeof columns[number]['type'], SpreadsheetEditorMethods>> = {

@@ -7,6 +7,7 @@ import type { CloseEditorParameters, CreateCellParameters, GetValueParameters, O
 export const checkbox_editor_methods = {
 	create_cell: function(td: CreateCellParameters[0], row: CreateCellParameters[1], column: CreateCellParameters[2]) {
 		td.html(`<input type="checkbox" id="checkbox_${row}_${column}">`);
+		td.css({'display' : 'flex', 'justify-content' : 'center'});
 		return td;
 	},
 	open_editor: function (td: OpenEditorParameters[0]) {

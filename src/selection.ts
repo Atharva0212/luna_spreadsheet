@@ -214,17 +214,16 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 		if (spreadsheet_editor === null) {
 			const selected_cell_range = spreadsheet_selection.selected_cell_range;
 			const active_cell = spreadsheet_selection.active_cell;
-
+			
 			if (!selected_cell_range ||!active_cell) {
 				return;
 			}
 
 			const active_cell_td = get_cell_from_coordinates(active_cell.row, active_cell.column) as JQuery<HTMLTableCellElement>;
 			const column_type = get_column_type_by_index(active_cell.column);
-
+			
 			if (column_type && column_type !== 'checkbox') {
 				const editor = spreadsheet_editors[column_type];
-				
 				if (editor) {
 					const original_value = editor.open_editor(active_cell_td, true);
 
@@ -247,6 +246,8 @@ export function keydown_handler(event: JQuery.KeyDownEvent) {
 					}
 				}
 			}
+
+			event.preventDefault();
 		}
 		
 	}
