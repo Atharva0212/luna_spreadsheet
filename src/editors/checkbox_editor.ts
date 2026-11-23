@@ -1,5 +1,4 @@
-import { spreadsheet_editor } from "../editor";
-import type { CloseEditorParameters, CreateCellParameters, GetValueParameters, OpenEditorParameters, SetValueParameters } from "./type";
+import type { CreateCellParameters, GetValueParameters, OpenEditorParameters, SetValueParameters } from "./type";
 // import 'jquery-ui/dist/themes/base/jquery-ui.css';
 // import 'jquery-ui/dist/jquery-ui.js';
 
@@ -12,8 +11,9 @@ export const checkbox_editor_methods = {
 	open_editor: function (td: OpenEditorParameters[0]) {
 		let checkbox = td.find('input');
 		checkbox.prop('checked', !checkbox.prop('checked'));
+		return ''
 	},
-	close_editor: function(td: CloseEditorParameters[0], should_restore_original_value: CloseEditorParameters[1]) { 
+	close_editor: function() { 
 	},
 	get_value: function(td: GetValueParameters[0]) {
 		return td.find('input[type="checkbox"]').is(':checked') ? 1 : -1;
