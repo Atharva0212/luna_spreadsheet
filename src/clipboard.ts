@@ -1,4 +1,5 @@
 import { get_column_type_by_index, spreadsheet_editors } from "./editor";
+import type { GetValueReturnType } from "./editors/type";
 import { get_cell_from_coordinates, get_spreadsheet_selection, set_active_cell_and_range_selection } from "./selection";
 
 let copied_data = '';
@@ -94,7 +95,7 @@ export function paste_handler(event: JQuery.Event) {
     });
 }
 
-export function fill_cells_with_repeating_data(copied_data: string[][], start_row: number, start_column: number, total_rows: number, total_columns: number) {
+export function fill_cells_with_repeating_data(copied_data: GetValueReturnType[][], start_row: number, start_column: number, total_rows: number, total_columns: number) {
     for (let i = 0; i < total_rows; i++) {
         const source_row = i % copied_data.length;
         const row = copied_data[source_row];

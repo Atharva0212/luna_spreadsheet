@@ -155,7 +155,7 @@ export function mouseeover_handler(event: JQuery.MouseOverEvent) {
 	set_selection(selected_cell_range);
 }
 
-export function dblclick_handler(event: JQuery.DoubleClickEvent) {
+export function dblclick_handler() {
 	if (!spreadsheet_selection.active_cell || spreadsheet_selection.is_selecting) {
 		return;
 	}

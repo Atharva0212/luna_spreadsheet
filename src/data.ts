@@ -1,11 +1,11 @@
-const types = [
-    'text',
-    'numeric',
-    'checkbox',
-    'date',
-    'dropdown',
-    'email',
-] as const;
+// const types = [
+//     'text',
+//     'numeric',
+//     'checkbox',
+//     'date',
+//     'dropdown',
+//     'email',
+// ] as const;
 
 export const columns = [
     { title: 'A', width: 70, type: 'text' },
