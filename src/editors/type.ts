@@ -11,8 +11,9 @@ export type SpreadsheetEditorMethods = {
     create_cell: (td: ElementType, row: Cell['row'], column: Cell['column']) => ElementType;
     open_editor: (td: ElementType, empty: boolean) => string;
     close_editor: (td: ElementType, should_restore_original_value: boolean) => void;
-    get_value: (td: ElementType) => string | number;
+    get_value: (td: ElementType) => string | number | boolean;
     set_value: (td: ElementType, value: GetValueReturnType) => void;
+    handle_keydown_event?: (event: JQuery.KeyDownEvent) => void;
 };
 
 export type CreateCellParameters = Parameters<SpreadsheetEditorMethods['create_cell']>;
@@ -21,3 +22,4 @@ export type CloseEditorParameters = Parameters<SpreadsheetEditorMethods['close_e
 export type GetValueParameters = Parameters<SpreadsheetEditorMethods['get_value']>;
 export type GetValueReturnType = ReturnType<SpreadsheetEditorMethods['get_value']>;
 export type SetValueParameters = Parameters<SpreadsheetEditorMethods['set_value']>;
+export type KeydownEventParameters = Parameters<NonNullable<SpreadsheetEditorMethods['handle_keydown_event']>>[0];

@@ -1,5 +1,8 @@
 import { $ } from "jquery";
-import type { CreateCellParameters, GetValueParameters, OpenEditorParameters, SetValueParameters } from "./type";
+import type { CreateCellParameters, GetValueParameters, KeydownEventParameters, OpenEditorParameters, SetValueParameters } from "./type";
+import { get_column_type_by_index } from "../editor";
+import { get_cell_from_coordinates, get_spreadsheet_selection, type CellRange } from "../selection";
+import { SPREADSHEET_KEY } from "../keyboard_constants";
 // import 'jquery-ui/dist/themes/base/jquery-ui.css';
 // import 'jquery-ui/dist/jquery-ui.js';
 
@@ -31,6 +34,23 @@ export const checkbox_editor_methods = {
 		return td.find('input[type="checkbox"]').is(':checked') ? 1 : -1;
 	},
 	set_value: function(td: SetValueParameters[0], value: SetValueParameters[1]) {
-		td.find('input[type="checkbox"]').prop('checked', Boolean(value));
+		td.find('input[type="checkbox"]').prop('checked', value);
+	},
+	handle_keydown_event: function(event: KeydownEventParameters) {
+		if (event.key === SPREADSHEET_KEY.SPACE) {
+			const spreadsheet_selection = get_spreadsheet_selection();
+			const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
+	
+			for (let i = selected_cell_range.start_row; i <= selected_cell_range.end_row; i++) {
+				for (let j = selected_cell_range.start_column; j <= selected_cell_range.end_column; j++) {
+					const column_type = get_column_type_by_index(j);
+	
+					if (column_type === 'checkbox') {
+						const td = get_cell_from_coordinates(i, j) as JQuery<HTMLTableCellElement>;
+						checkbox_editor_methods.open_editor(td);
+					}
+				}
+			}
+		}
 	}
 }
