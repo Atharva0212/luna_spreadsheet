@@ -41,16 +41,37 @@ export const checkbox_editor_methods = {
 			const spreadsheet_selection = get_spreadsheet_selection();
 			const selected_cell_range = spreadsheet_selection.selected_cell_range as CellRange;
 	
+			const should_check_all = should_check_all_selected_checkboxes(selected_cell_range);
+			
 			for (let i = selected_cell_range.start_row; i <= selected_cell_range.end_row; i++) {
 				for (let j = selected_cell_range.start_column; j <= selected_cell_range.end_column; j++) {
 					const column_type = get_column_type_by_index(j);
 	
 					if (column_type === 'checkbox') {
 						const td = get_cell_from_coordinates(i, j) as JQuery<HTMLTableCellElement>;
-						checkbox_editor_methods.open_editor(td);
+						checkbox_editor_methods.set_value(td, should_check_all);
 					}
 				}
 			}
 		}
 	}
+}
+
+function should_check_all_selected_checkboxes(selected_cell_range: CellRange) {
+	for (let i = selected_cell_range.start_row; i <= selected_cell_range.end_row; i++) {
+		for (let j = selected_cell_range.start_column; j <= selected_cell_range.end_column; j++) {
+			const column_type = get_column_type_by_index(j);
+
+			if (column_type === 'checkbox') {
+				const td = get_cell_from_coordinates(i, j) as JQuery<HTMLTableCellElement>;
+				const checkbox_value = checkbox_editor_methods.get_value(td);
+
+				if (checkbox_value !== 1) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
