@@ -1,8 +1,8 @@
 import { $ } from "jquery";
-import type { CreateCellParameters, GetValueParameters, KeydownEventParameters, OpenEditorParameters, SetValueParameters } from "./type";
 import { get_column_type_by_index } from "../editor";
-import { get_cell_from_coordinates, get_spreadsheet_selection, type CellRange } from "../selection";
 import { SPREADSHEET_KEY } from "../keyboard_constants";
+import { get_cell_from_coordinates, get_spreadsheet_selection, type CellRange } from "../selection";
+import type { CreateCellParameters, GetValueParameters, KeydownEventParameters, SetValueParameters } from "./type";
 // import 'jquery-ui/dist/themes/base/jquery-ui.css';
 // import 'jquery-ui/dist/jquery-ui.js';
 
@@ -23,10 +23,7 @@ export const checkbox_editor_methods = {
 
 		return td;
 	},
-	open_editor: function (td: OpenEditorParameters[0]) {
-		let checkbox = td.find('input');
-		checkbox.prop('checked', !checkbox.prop('checked'));
-		return ''
+	open_editor: function () {
 	},
 	close_editor: function() { 
 	},

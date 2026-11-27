@@ -65,6 +65,8 @@ function create_spreadsheet() {
 		body_row.append(sr_num_td);
 
 		for (let j = 0; j < columns.length; j++) {
+			console.log(j);
+			
 			let td = $('<td>', {
 				'tabindex' : '-1',
 				'role' : 'gridcell',
